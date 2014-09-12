@@ -53,7 +53,7 @@ public class ApacheHttpClient implements HttpClient {
     this(HttpConfig.newBuilder().build());
   }
 
-  public ApacheHttpClient(HttpConfig config) {
+  public ApacheHttpClient(@Nonnull HttpConfig config) {
     Preconditions.checkNotNull(config);
 
     PoolingClientConnectionManager connectionManager = new PoolingClientConnectionManager();

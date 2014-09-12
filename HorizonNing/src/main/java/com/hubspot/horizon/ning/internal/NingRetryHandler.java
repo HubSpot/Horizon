@@ -7,6 +7,7 @@ import com.hubspot.horizon.HttpRequest.Options;
 import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.RetryStrategy;
 
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.IOException;
 import java.util.concurrent.Executors;
@@ -30,9 +31,9 @@ public class NingRetryHandler implements RetryStrategy {
   private final Options options;
   private final AtomicInteger currentRetries;
 
-  public NingRetryHandler(Options options) {
+  public NingRetryHandler(@Nonnull Options options) {
     this.retryRunnable = new AtomicReference<Runnable>();
-    this.options = options;
+    this.options = Preconditions.checkNotNull(options);
     this.currentRetries = new AtomicInteger();
   }
 
