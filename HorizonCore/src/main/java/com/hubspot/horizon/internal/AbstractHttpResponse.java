@@ -1,4 +1,4 @@
-package com.hubspot.zenith.internal;
+package com.hubspot.horizon.internal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

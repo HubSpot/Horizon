@@ -1,4 +1,4 @@
-package com.hubspot.zenith.internal.codec;
+package com.hubspot.horizon.internal.codec;
 
 import com.google.common.net.HttpHeaders;
 import com.hubspot.horizon.Codec;

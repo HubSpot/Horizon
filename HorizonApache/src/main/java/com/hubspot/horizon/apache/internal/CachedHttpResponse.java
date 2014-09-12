@@ -3,7 +3,7 @@ package com.hubspot.horizon.apache.internal;
 import com.google.common.io.Closeables;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpResponse;
-import com.hubspot.zenith.internal.AbstractHttpResponse;
+import com.hubspot.horizon.internal.AbstractHttpResponse;
 
 import javax.annotation.Nonnull;
 import java.io.ByteArrayInputStream;

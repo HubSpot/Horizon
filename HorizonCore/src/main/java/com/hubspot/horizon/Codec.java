@@ -1,8 +1,8 @@
 package com.hubspot.horizon;
 
-import com.hubspot.zenith.internal.codec.Gzip;
-import com.hubspot.zenith.internal.codec.None;
-import com.hubspot.zenith.internal.codec.Snappy;
+import com.hubspot.horizon.internal.codec.Gzip;
+import com.hubspot.horizon.internal.codec.None;
+import com.hubspot.horizon.internal.codec.Snappy;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;

@@ -1,7 +1,7 @@
 package com.hubspot.horizon.ning.internal;
 
 import com.hubspot.horizon.HttpRequest;
-import com.hubspot.zenith.internal.AbstractHttpResponse;
+import com.hubspot.horizon.internal.AbstractHttpResponse;
 import com.ning.http.client.Response;
 
 import javax.annotation.Nonnull;
