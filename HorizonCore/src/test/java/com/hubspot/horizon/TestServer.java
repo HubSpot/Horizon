@@ -1,8 +1,6 @@
 package com.hubspot.horizon;
 
-import com.google.common.base.Throwables;
 import com.hubspot.horizon.HttpRequest.ContentType;
-import org.assertj.core.util.Closeables;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Connector;
@@ -21,8 +19,6 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.InputStream;
-import java.security.KeyStore;
 
 public class TestServer {
   private final Server server;
@@ -59,8 +55,8 @@ public class TestServer {
 
   private NetworkConnector buildHttpsConnector(Server server) {
     SslContextFactory sslContextFactory = new SslContextFactory();
-    sslContextFactory.setKeyStore(buildKeyOrTrustStore());
-    sslContextFactory.setTrustStore(buildKeyOrTrustStore());
+    sslContextFactory.setKeyStorePath(getClass().getResource("/keystore").getPath());
+    sslContextFactory.setTrustStorePath(getClass().getResource("/keystore").getPath());
     sslContextFactory.setKeyStorePassword("password");
     sslContextFactory.setTrustStorePassword("password");
 
@@ -71,20 +67,6 @@ public class TestServer {
     ConnectionFactory httpsFactory = new HttpConnectionFactory(httpsConfiguration);
 
     return new ServerConnector(server, sslFactory, httpsFactory);
-  }
-
-  private KeyStore buildKeyOrTrustStore() {
-    InputStream inputStream = getClass().getResourceAsStream("/keystore");
-    try {
-      KeyStore keyStore = KeyStore.getInstance("JKS");
-      keyStore.load(inputStream, "password".toCharArray());
-
-      return keyStore;
-    } catch (Exception e) {
-      throw Throwables.propagate(e);
-    } finally {
-      Closeables.closeQuietly(inputStream);
-    }
   }
 
   private Handler buildHandler() {
