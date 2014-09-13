@@ -299,7 +299,10 @@ public class HttpRequest {
     }
 
     private Map<String, List<String>> buildHeaders() {
-      compression.addHeader(headers);
+      Optional<String> contentEncodingHeaderValue = compression.getContentEncodingHeaderValue();
+      if (contentEncodingHeaderValue.isPresent()) {
+        headers.put(HttpHeaders.CONTENT_ENCODING, Collections.singletonList(contentEncodingHeaderValue.get()));
+      }
       if (contentType != null) {
         headers.put(HttpHeaders.CONTENT_TYPE, Collections.singletonList(contentType.getHeaderValue()));
       }

@@ -1,9 +1,7 @@
 package com.hubspot.horizon.internal.codec;
 
+import com.google.common.base.Optional;
 import com.hubspot.horizon.Codec;
-
-import java.util.List;
-import java.util.Map;
 
 public enum None implements Codec {
   INSTANCE;
@@ -19,5 +17,7 @@ public enum None implements Codec {
   }
 
   @Override
-  public void addHeader(Map<String, List<String>> headers) { }
+  public Optional<String> getContentEncodingHeaderValue() {
+    return Optional.absent();
+  }
 }

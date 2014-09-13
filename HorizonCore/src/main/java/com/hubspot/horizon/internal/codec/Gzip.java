@@ -1,16 +1,13 @@
 package com.hubspot.horizon.internal.codec;
 
+import com.google.common.base.Optional;
 import com.google.common.io.ByteStreams;
-import com.google.common.net.HttpHeaders;
 import com.hubspot.horizon.Codec;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -42,7 +39,7 @@ public enum Gzip implements Codec {
   }
 
   @Override
-  public void addHeader(Map<String, List<String>> headers) {
-    headers.put(HttpHeaders.CONTENT_ENCODING, Collections.singletonList("gzip"));
+  public Optional<String> getContentEncodingHeaderValue() {
+    return Optional.of("gzip");
   }
 }
