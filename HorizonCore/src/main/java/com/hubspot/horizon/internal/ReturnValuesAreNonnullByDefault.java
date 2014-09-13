@@ -1,4 +1,4 @@
-package com.hubspot.horizon;
+package com.hubspot.horizon.internal;
 
 import javax.annotation.Nonnull;
 import javax.annotation.meta.TypeQualifierDefault;
