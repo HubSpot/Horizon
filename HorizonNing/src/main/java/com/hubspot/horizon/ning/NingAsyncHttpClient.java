@@ -69,9 +69,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
     internalExecute(request, options, callback);
   }
 
-  private ListenableFuture<HttpResponse> internalExecute(HttpRequest request,
-                                                                  Options options,
-                                                                  Callback callback) {
+  private ListenableFuture<HttpResponse> internalExecute(HttpRequest request, Options options, Callback callback) {
     Preconditions.checkNotNull(request);
     Preconditions.checkNotNull(options);
     Preconditions.checkNotNull(callback);
