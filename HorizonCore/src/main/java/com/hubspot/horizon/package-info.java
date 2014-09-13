@@ -1,0 +1,5 @@
+@ParametersAreNonnullByDefault
+@ReturnValuesAreNonnullByDefault
+package com.hubspot.horizon;
+
+import javax.annotation.ParametersAreNonnullByDefault;

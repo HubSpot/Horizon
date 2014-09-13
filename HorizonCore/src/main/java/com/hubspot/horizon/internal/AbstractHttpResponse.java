@@ -15,15 +15,12 @@ import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.ObjectMapperHolder;
 import org.apache.http.HttpHeaders;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 
-@ParametersAreNonnullByDefault
 public abstract class AbstractHttpResponse implements HttpResponse {
 
   @Override
@@ -56,7 +53,7 @@ public abstract class AbstractHttpResponse implements HttpResponse {
   }
 
   @Override
-  public @Nonnull <T> T getAs(Class<T> clazz) {
+  public <T> T getAs(Class<T> clazz) {
     try {
       return getObjectMapper().readValue(getAsInputStream(), Preconditions.checkNotNull(clazz));
     } catch (IOException e) {
@@ -65,7 +62,7 @@ public abstract class AbstractHttpResponse implements HttpResponse {
   }
 
   @Override
-  public @Nonnull <T> T getAs(TypeReference<T> type) {
+  public <T> T getAs(TypeReference<T> type) {
     try {
       return getObjectMapper().readValue(getAsInputStream(), Preconditions.checkNotNull(type));
     } catch (IOException e) {
@@ -74,7 +71,7 @@ public abstract class AbstractHttpResponse implements HttpResponse {
   }
 
   @Override
-  public @Nonnull <T> T getAs(JavaType type) {
+  public <T> T getAs(JavaType type) {
     try {
       return getObjectMapper().readValue(getAsInputStream(), Preconditions.checkNotNull(type));
     } catch (IOException e) {
@@ -83,7 +80,7 @@ public abstract class AbstractHttpResponse implements HttpResponse {
   }
 
   @Override
-  public @Nonnull JsonNode getAsJsonNode() {
+  public JsonNode getAsJsonNode() {
     try {
       return getObjectMapper().readTree(getAsInputStream());
     } catch (IOException e) {
@@ -92,7 +89,7 @@ public abstract class AbstractHttpResponse implements HttpResponse {
   }
 
   @Override
-  public @Nonnull String getAsString() {
+  public String getAsString() {
     InputStreamReader inputStreamReader = new InputStreamReader(getAsInputStream(), Charsets.UTF_8);
 
     try {
@@ -103,7 +100,7 @@ public abstract class AbstractHttpResponse implements HttpResponse {
   }
 
   @Override
-  public @Nonnull byte[] getAsBytes() {
+  public byte[] getAsBytes() {
     InputStream inputStream = getAsInputStream();
 
     try {

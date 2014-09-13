@@ -7,20 +7,17 @@ import com.hubspot.horizon.HttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
-
 public class NingFuture extends AbstractFuture<HttpResponse> {
   private final Callback callback;
 
-  public NingFuture(@Nonnull Callback callback) {
+  public NingFuture(Callback callback) {
     this.callback = new CallbackWrapper(Preconditions.checkNotNull(callback));
   }
 
-  @Override
-  protected boolean set(HttpResponse response) {
+  // superclass method has @Nullable on the argument so make a separate method
+  public boolean setNonnull(HttpResponse response) {
     Preconditions.checkNotNull(response);
-    if (super.set(response)) {
+    if (set(response)) {
       callback.completed(response);
       return true;
     } else {
@@ -29,7 +26,7 @@ public class NingFuture extends AbstractFuture<HttpResponse> {
   }
 
   @Override
-  protected boolean setException(@Nonnull Throwable t) {
+  public boolean setException(Throwable t) {
     Preconditions.checkNotNull(t);
     if (super.setException(t)) {
       callback.failed(t instanceof Exception ? (Exception) t : new Exception(t));
@@ -40,17 +37,16 @@ public class NingFuture extends AbstractFuture<HttpResponse> {
   }
 
   @Override
-  protected void interruptTask() {
+  public void interruptTask() {
     callback.cancelled();
   }
 
-  @ParametersAreNonnullByDefault
   private static final class CallbackWrapper implements Callback {
     private static final Logger LOG = LoggerFactory.getLogger(CallbackWrapper.class);
 
     private final Callback callback;
 
-    private CallbackWrapper(@Nonnull Callback callback) {
+    private CallbackWrapper(Callback callback) {
       this.callback = Preconditions.checkNotNull(callback);
     }
 

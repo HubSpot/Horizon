@@ -4,7 +4,6 @@ import com.hubspot.horizon.HttpRequest;
 import com.ning.http.client.Request;
 import com.ning.http.client.RequestBuilder;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -14,7 +13,7 @@ public final class NingHttpRequestConverter {
     throw new AssertionError();
   }
 
-  public static @Nonnull Request convert(@Nonnull HttpRequest request) {
+  public static Request convert(HttpRequest request) {
     RequestBuilder ningRequest = new RequestBuilder(request.getMethod().name());
     ningRequest.setURI(request.getUrl());
 

@@ -11,11 +11,11 @@ public enum ObjectMapperHolder {
 
   private final AtomicReference<ObjectMapper> mapper = new AtomicReference<ObjectMapper>(new ObjectMapper());
 
-  public @Nonnull ObjectMapper get() {
+  public ObjectMapper get() {
     return mapper.get();
   }
 
-  public void set(@Nonnull ObjectMapper mapper) {
+  public void set(ObjectMapper mapper) {
     this.mapper.set(Preconditions.checkNotNull(mapper));
   }
 }

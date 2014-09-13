@@ -4,8 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
 import com.hubspot.horizon.HttpRequest.Options;
 
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.concurrent.TimeUnit;
 
 public class HttpConfig {
@@ -82,7 +80,7 @@ public class HttpConfig {
     return maxRedirects;
   }
 
-  public @Nonnull String getUserAgent() {
+  public String getUserAgent() {
     return userAgent;
   }
 
@@ -98,8 +96,7 @@ public class HttpConfig {
     return rejectRelativeRedirects;
   }
 
-  public @Nonnull
-  Options getOptions() {
+  public Options getOptions() {
     Options options = new Options();
 
     options.setMaxRetries(maxRetries);
@@ -110,7 +107,6 @@ public class HttpConfig {
     return options;
   }
 
-  @ParametersAreNonnullByDefault
   public static class Builder {
     private int maxConnections = 100;
     private int maxConnectionsPerHost = 25;

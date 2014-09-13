@@ -4,7 +4,6 @@ import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.internal.AbstractHttpResponse;
 import com.ning.http.client.Response;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -23,7 +22,6 @@ public class NingHttpResponse extends AbstractHttpResponse {
     this.responseStream = ningResponse.getResponseBodyAsStream();
   }
 
-  @Nonnull
   @Override
   public HttpRequest getRequest() {
     return request;
@@ -34,13 +32,11 @@ public class NingHttpResponse extends AbstractHttpResponse {
     return statusCode;
   }
 
-  @Nonnull
   @Override
   public Map<String, List<String>> getHeaders() {
     return headers;
   }
 
-  @Nonnull
   @Override
   public InputStream getAsInputStream() {
     return responseStream;

@@ -4,8 +4,6 @@ import com.google.common.io.ByteStreams;
 import com.google.common.net.HttpHeaders;
 import com.hubspot.horizon.Codec;
 
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -16,12 +14,11 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-@ParametersAreNonnullByDefault
 public enum Gzip implements Codec {
   INSTANCE;
 
   @Override
-  public @Nonnull byte[] compress(byte[] data) {
+  public byte[] compress(byte[] data) {
     try {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       OutputStream gzip = new GZIPOutputStream(baos);
@@ -36,7 +33,7 @@ public enum Gzip implements Codec {
   }
 
   @Override
-  public @Nonnull byte[] decompress(byte[] bytes) {
+  public byte[] decompress(byte[] bytes) {
     try {
       return ByteStreams.toByteArray(new GZIPInputStream(new ByteArrayInputStream(bytes)));
     } catch (IOException e) {

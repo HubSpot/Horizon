@@ -11,7 +11,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -21,7 +20,7 @@ public final class ApacheHttpRequestConverter {
     throw new AssertionError();
   }
 
-  public static @Nonnull HttpUriRequest convert(@Nonnull HttpRequest request) {
+  public static HttpUriRequest convert(HttpRequest request) {
     final HttpUriRequest apacheRequest;
 
     switch (request.getMethod()) {

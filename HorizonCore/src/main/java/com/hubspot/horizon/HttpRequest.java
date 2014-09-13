@@ -12,9 +12,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.message.BasicNameValuePair;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -68,11 +66,7 @@ public class HttpRequest {
   private final byte[] body;
   private final Options options;
 
-  private HttpRequest(@Nonnull Method method,
-                      @Nonnull URI url,
-                      @Nonnull Map<String, List<String>> headers,
-                      @Nullable byte[] body,
-                      @Nonnull Options options) {
+  private HttpRequest(Method method, URI url, Map<String, List<String>> headers, @Nullable byte[] body, Options options) {
     this.method = Preconditions.checkNotNull(method);
     this.url = Preconditions.checkNotNull(url);
     this.headers = Preconditions.checkNotNull(headers);
@@ -84,15 +78,15 @@ public class HttpRequest {
     return new Builder();
   }
 
-  public @Nonnull Method getMethod() {
+  public Method getMethod() {
     return method;
   }
 
-  public @Nonnull URI getUrl() {
+  public URI getUrl() {
     return url;
   }
 
-  public @Nonnull Map<String, List<String>> getHeaders() {
+  public Map<String, List<String>> getHeaders() {
     return headers;
   }
 
@@ -100,11 +94,10 @@ public class HttpRequest {
     return body;
   }
 
-  public @Nonnull Options getOptions() {
+  public Options getOptions() {
     return options;
   }
 
-  @ParametersAreNonnullByDefault
   public static class Options {
     public static Options DEFAULT = new Options();
 
@@ -145,7 +138,7 @@ public class HttpRequest {
       this.retryStrategy = Optional.of(retryStrategy);
     }
 
-    public @Nonnull Options mergeFrom(Options other) {
+    public Options mergeFrom(Options other) {
       Preconditions.checkNotNull(other);
       Options merged = new Options();
 
@@ -158,7 +151,6 @@ public class HttpRequest {
     }
   }
 
-  @ParametersAreNonnullByDefault
   public static class Builder {
     private String url = null;
     private Method method = Method.GET;
@@ -266,7 +258,7 @@ public class HttpRequest {
       return this;
     }
 
-    public @Nonnull HttpRequest build() {
+    public HttpRequest build() {
       URI url = buildUrl();
       byte[] body = buildBody();
       Map<String, List<String>> headers = buildHeaders();
@@ -274,7 +266,7 @@ public class HttpRequest {
       return new HttpRequest(method, url, headers, body, options);
     }
 
-    private @Nonnull URI buildUrl() {
+    private URI buildUrl() {
       Preconditions.checkNotNull(url, "URL is not set");
 
       if (queryParams.isEmpty()) {
@@ -306,7 +298,7 @@ public class HttpRequest {
       return compression.compress(body);
     }
 
-    private @Nonnull Map<String, List<String>> buildHeaders() {
+    private Map<String, List<String>> buildHeaders() {
       compression.addHeader(headers);
       if (contentType != null) {
         headers.put(HttpHeaders.CONTENT_TYPE, Collections.singletonList(contentType.getHeaderValue()));
@@ -331,7 +323,7 @@ public class HttpRequest {
       return URLEncodedUtils.format(toNameValuePairs(parameters), UTF_8);
     }
 
-    private static @Nonnull List<NameValuePair> toNameValuePairs(Map<String, List<String>> parameters) {
+    private static List<NameValuePair> toNameValuePairs(Map<String, List<String>> parameters) {
       List<NameValuePair> pairs = new ArrayList<NameValuePair>();
       for (Entry<String, List<String>> entry : parameters.entrySet()) {
         String name = entry.getKey();

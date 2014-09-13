@@ -7,7 +7,6 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -55,7 +54,7 @@ public class ApacheHttpResponse extends AbstractHttpResponse {
   }
 
   @Override
-  public @Nonnull HttpRequest getRequest() {
+  public HttpRequest getRequest() {
     return request;
   }
 
@@ -65,12 +64,12 @@ public class ApacheHttpResponse extends AbstractHttpResponse {
   }
 
   @Override
-  public @Nonnull Map<String, List<String>> getHeaders() {
+  public Map<String, List<String>> getHeaders() {
     return headers;
   }
 
   @Override
-  public @Nonnull InputStream getAsInputStream() {
+  public InputStream getAsInputStream() {
     return responseStream;
   }
 }

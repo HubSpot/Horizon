@@ -24,7 +24,7 @@ public class NingCompletionHandler extends AsyncCompletionHandler<HttpResponse> 
     if (retryHandler.shouldRetry(request, response)) {
       retryHandler.retry();
     } else {
-      future.set(response);
+      future.setNonnull(response);
     }
     return response;
   }

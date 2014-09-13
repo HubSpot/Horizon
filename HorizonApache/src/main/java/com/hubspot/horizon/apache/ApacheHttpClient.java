@@ -29,9 +29,7 @@ import org.apache.http.params.CoreConnectionPNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Timer;
@@ -40,7 +38,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@ParametersAreNonnullByDefault
 public class ApacheHttpClient implements HttpClient {
   private static final Logger LOG = LoggerFactory.getLogger(ApacheHttpClient.class);
 
@@ -53,7 +50,7 @@ public class ApacheHttpClient implements HttpClient {
     this(HttpConfig.newBuilder().build());
   }
 
-  public ApacheHttpClient(@Nonnull HttpConfig config) {
+  public ApacheHttpClient(HttpConfig config) {
     Preconditions.checkNotNull(config);
 
     PoolingClientConnectionManager connectionManager = new PoolingClientConnectionManager();
@@ -85,12 +82,12 @@ public class ApacheHttpClient implements HttpClient {
   }
 
   @Override
-  public @Nonnull HttpResponse execute(HttpRequest request) throws HttpRuntimeException {
+  public HttpResponse execute(HttpRequest request) throws HttpRuntimeException {
     return execute(Preconditions.checkNotNull(request), Options.DEFAULT);
   }
 
   @Override
-  public @Nonnull HttpResponse execute(HttpRequest request, Options options) throws HttpRuntimeException {
+  public HttpResponse execute(HttpRequest request, Options options) throws HttpRuntimeException {
     Preconditions.checkNotNull(request);
     Preconditions.checkNotNull(options);
 
@@ -102,7 +99,7 @@ public class ApacheHttpClient implements HttpClient {
     }
   }
 
-  private @Nonnull HttpResponse executeWithRetries(HttpRequest request, Options options, int retries) throws IOException {
+  private HttpResponse executeWithRetries(HttpRequest request, Options options, int retries) throws IOException {
     int maxRetries = options.getMaxRetries();
     RetryStrategy retryStrategy = options.getRetryStrategy();
 
@@ -144,7 +141,7 @@ public class ApacheHttpClient implements HttpClient {
     return backoffAndRetry(request, options, retries + 1);
   }
 
-  private @Nonnull HttpResponse backoffAndRetry(HttpRequest request, Options options, int retries) throws IOException {
+  private HttpResponse backoffAndRetry(HttpRequest request, Options options, int retries) throws IOException {
     try {
       Thread.sleep(computeBackoff(options, retries));
     } catch (InterruptedException e) {

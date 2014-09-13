@@ -1,11 +1,11 @@
 package com.hubspot.horizon.apache.internal;
 
+import com.google.common.base.Preconditions;
 import com.google.common.io.Closeables;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.internal.AbstractHttpResponse;
 
-import javax.annotation.Nonnull;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +17,7 @@ public class CachedHttpResponse extends AbstractHttpResponse {
   private final byte[] responseBytes;
 
   private CachedHttpResponse(HttpResponse delegate) throws IOException {
-    this.delegate = delegate;
+    this.delegate = Preconditions.checkNotNull(delegate);
     try {
       this.responseBytes = delegate.getAsBytes();
     } catch (RuntimeException e) {
@@ -32,7 +32,7 @@ public class CachedHttpResponse extends AbstractHttpResponse {
   }
 
   @Override
-  public @Nonnull HttpRequest getRequest() {
+  public HttpRequest getRequest() {
     return delegate.getRequest();
   }
 
@@ -42,17 +42,17 @@ public class CachedHttpResponse extends AbstractHttpResponse {
   }
 
   @Override
-  public @Nonnull Map<String, List<String>> getHeaders() {
+  public Map<String, List<String>> getHeaders() {
     return delegate.getHeaders();
   }
 
   @Override
-  public @Nonnull byte[] getAsBytes() {
+  public byte[] getAsBytes() {
     return responseBytes;
   }
 
   @Override
-  public @Nonnull InputStream getAsInputStream() {
+  public InputStream getAsInputStream() {
     return new ByteArrayInputStream(responseBytes);
   }
 }

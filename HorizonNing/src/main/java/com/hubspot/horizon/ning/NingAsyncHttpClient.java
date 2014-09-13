@@ -18,11 +18,8 @@ import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.Request;
 import com.ning.http.client.extra.ThrottleRequestFilter;
 
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.IOException;
 
-@ParametersAreNonnullByDefault
 public class NingAsyncHttpClient implements AsyncHttpClient {
   private final com.ning.http.client.AsyncHttpClient ningClient;
   private final Options defaultOptions;
@@ -31,7 +28,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
     this(HttpConfig.newBuilder().build());
   }
 
-  public NingAsyncHttpClient(@Nonnull HttpConfig config) {
+  public NingAsyncHttpClient(HttpConfig config) {
     Preconditions.checkNotNull(config);
 
     AsyncHttpClientConfig ningConfig = new AsyncHttpClientConfig.Builder()
@@ -53,12 +50,12 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
   }
 
   @Override
-  public @Nonnull ListenableFuture<HttpResponse> execute(HttpRequest request) {
+  public ListenableFuture<HttpResponse> execute(HttpRequest request) {
     return execute(Preconditions.checkNotNull(request), Options.DEFAULT);
   }
 
   @Override
-  public @Nonnull ListenableFuture<HttpResponse> execute(HttpRequest request, Options options) {
+  public ListenableFuture<HttpResponse> execute(HttpRequest request, Options options) {
     return internalExecute(request, options, EmptyCallback.INSTANCE);
   }
 
@@ -72,7 +69,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
     internalExecute(request, options, callback);
   }
 
-  private @Nonnull ListenableFuture<HttpResponse> internalExecute(HttpRequest request,
+  private ListenableFuture<HttpResponse> internalExecute(HttpRequest request,
                                                                   Options options,
                                                                   Callback callback) {
     Preconditions.checkNotNull(request);

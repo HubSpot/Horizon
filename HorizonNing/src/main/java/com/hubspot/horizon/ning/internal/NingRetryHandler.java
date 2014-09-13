@@ -7,8 +7,6 @@ import com.hubspot.horizon.HttpRequest.Options;
 import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.RetryStrategy;
 
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -18,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-@ParametersAreNonnullByDefault
 public class NingRetryHandler implements RetryStrategy {
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder()
           .setDaemon(true)
@@ -31,7 +28,7 @@ public class NingRetryHandler implements RetryStrategy {
   private final Options options;
   private final AtomicInteger currentRetries;
 
-  public NingRetryHandler(@Nonnull Options options) {
+  public NingRetryHandler(Options options) {
     this.retryRunnable = new AtomicReference<Runnable>();
     this.options = Preconditions.checkNotNull(options);
     this.currentRetries = new AtomicInteger();

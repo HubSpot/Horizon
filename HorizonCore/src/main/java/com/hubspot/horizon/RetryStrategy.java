@@ -2,7 +2,6 @@ package com.hubspot.horizon;
 
 import org.apache.http.NoHttpResponseException;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import java.io.IOException;
@@ -11,7 +10,6 @@ import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeoutException;
 
-@ParametersAreNonnullByDefault
 public interface RetryStrategy {
   boolean shouldRetry(HttpRequest request, HttpResponse response);
   boolean shouldRetry(HttpRequest request, IOException exception);
