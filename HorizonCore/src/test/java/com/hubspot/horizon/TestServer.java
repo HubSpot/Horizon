@@ -1,6 +1,7 @@
 package com.hubspot.horizon;
 
-import com.hubspot.horizon.HttpRequest.ContentType;
+import com.google.common.base.Preconditions;
+import com.google.common.net.HttpHeaders;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Connector;
@@ -15,20 +16,33 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.xerial.snappy.SnappyInputStream;
+import org.xerial.snappy.SnappyOutputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public class TestServer {
   private final Server server;
   private final NetworkConnector httpConnector;
   private final NetworkConnector httpsConnector;
+  private final ConcurrentMap<String, AtomicInteger> requestCounts;
 
   public TestServer() {
     this.server = new Server();
     this.httpConnector = buildHttpConnector(server);
     this.httpsConnector = buildHttpsConnector(server);
+    this.requestCounts = new ConcurrentHashMap<String, AtomicInteger>();
     server.setConnectors(new Connector[] { httpConnector, httpsConnector });
     server.setHandler(buildHandler());
   }
@@ -37,12 +51,12 @@ public class TestServer {
     server.start();
   }
 
-  public int getHttpPort() {
-    return httpConnector.getLocalPort();
+  public String baseHttpUrl() {
+    return "http://localhost:" + httpConnector.getLocalPort();
   }
 
-  public int getHttpsPort() {
-    return httpsConnector.getLocalPort();
+  public String baseHttpsUrl() {
+    return "https://localhost:" + httpsConnector.getLocalPort();
   }
 
   public void stop() throws Exception {
@@ -73,12 +87,57 @@ public class TestServer {
     return new AbstractHandler() {
       @Override
       public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setContentType(ContentType.TEXT.getHeaderValue());
-        response.setStatus(HttpServletResponse.SC_OK);
+        String inputEncoding = request.getHeader(HttpHeaders.CONTENT_ENCODING);
+        final InputStream inputStream;
+        if ("gzip".equals(inputEncoding)) {
+          inputStream = new GZIPInputStream(request.getInputStream());
+        } else if ("snappy".equals(inputEncoding)) {
+          inputStream = new SnappyInputStream(request.getInputStream());
+        } else {
+          inputStream = request.getInputStream();
+        }
+
+        ExpectedHttpResponse expectedResponse = ObjectMapperHolder.INSTANCE.get().readValue(inputStream, ExpectedHttpResponse.class);
+
+        response.setStatus(expectedResponse.getStatusCode());
+        response.addHeader("X-Request-Count", String.valueOf(incrementAndGetRequestCount(expectedResponse)));
+        for (Entry<String, List<String>> entry : expectedResponse.getHeaders().entrySet()) {
+          String name = entry.getKey();
+
+          for (String value : entry.getValue()) {
+            response.addHeader(name, value);
+          }
+        }
         baseRequest.setHandled(true);
 
-        response.getWriter().print("<h1>Hello World</h1>");
+        if (expectedResponse.getBody() != null) {
+          String outputEncoding = expectedResponse.getHeader(HttpHeaders.CONTENT_ENCODING);
+          final OutputStream outputStream;
+          if ("gzip".equals(outputEncoding)) {
+            outputStream = new GZIPOutputStream(response.getOutputStream());
+          } else if ("snappy".equals(outputEncoding)) {
+            outputStream = new SnappyOutputStream(response.getOutputStream());
+          } else {
+            outputStream = response.getOutputStream();
+          }
+
+          outputStream.write(expectedResponse.getBody());
+        }
       }
     };
+  }
+
+  private int incrementAndGetRequestCount(ExpectedHttpResponse request) {
+    String requestId = Preconditions.checkNotNull(request.getHeader("X-Request-ID"));
+    if (requestCounts.containsKey(requestId)) {
+      return requestCounts.get(requestId).incrementAndGet();
+    } else {
+      AtomicInteger counter = requestCounts.putIfAbsent(requestId, new AtomicInteger(1));
+      if (counter == null) {
+        return 1;
+      } else {
+        return counter.incrementAndGet();
+      }
+    }
   }
 }
