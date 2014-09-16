@@ -1,5 +1,6 @@
 package com.hubspot.horizon.apache;
 
+import com.hubspot.horizon.Compression;
 import com.hubspot.horizon.ExpectedHttpResponse;
 import com.hubspot.horizon.HttpClient;
 import com.hubspot.horizon.HttpConfig;
@@ -47,7 +48,7 @@ public class ApacheHttpClientTest {
             .build();
     HttpResponse response = httpClient.execute(request);
 
-    assertThat(response).hasStatusCode(200).hasBody("".getBytes()).hasRetries(0);
+    assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
   }
 
   @Test
@@ -61,7 +62,7 @@ public class ApacheHttpClientTest {
             .build();
     HttpResponse response = httpClient.execute(request);
 
-    assertThat(response).hasStatusCode(200).hasBody("".getBytes()).hasRetries(0);
+    assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
   }
 
   @Test
@@ -75,6 +76,78 @@ public class ApacheHttpClientTest {
             .build();
     HttpResponse response = httpClient.execute(request);
 
-    assertThat(response).hasStatusCode(500).hasBody("".getBytes()).hasRetries(1);
+    assertThat(response).hasStatusCode(500).hasBody("").hasRetries(1);
+  }
+
+  @Test
+  public void itCompressesWithGzip() {
+    httpClient = new ApacheHttpClient();
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .setMethod(Method.POST)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().build())
+            .setCompression(Compression.GZIP)
+            .build();
+    HttpResponse response = httpClient.execute(request);
+
+    assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0).wasGzipCompressed();
+  }
+
+  @Test
+  public void itCompressesWithSnappy() {
+    httpClient = new ApacheHttpClient();
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .setMethod(Method.POST)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().build())
+            .setCompression(Compression.SNAPPY)
+            .build();
+    HttpResponse response = httpClient.execute(request);
+
+    assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0).wasSnappyCompressed();
+  }
+
+  @Test
+  public void itReturnsCorrectResponseBody() {
+    httpClient = new ApacheHttpClient();
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .setMethod(Method.POST)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
+            .build();
+    HttpResponse response = httpClient.execute(request);
+
+    assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0);
+  }
+
+  @Test
+  public void itDecompressesWithGzip() {
+    httpClient = new ApacheHttpClient();
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .setMethod(Method.POST)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().setBody("test").setCompression(Compression.GZIP).build())
+            .build();
+    HttpResponse response = httpClient.execute(request);
+
+    assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0).isGzipCompressed();
+  }
+
+  @Test
+  public void itDecompressesWithSnappy() {
+    httpClient = new ApacheHttpClient();
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .setMethod(Method.POST)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().setBody("test").setCompression(Compression.SNAPPY).build())
+            .build();
+    HttpResponse response = httpClient.execute(request);
+
+    assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0).isSnappyCompressed();
   }
 }

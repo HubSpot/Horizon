@@ -7,6 +7,7 @@ import com.hubspot.horizon.HttpConfig;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpRequest.Options;
 import com.hubspot.horizon.HttpResponse;
+import com.hubspot.horizon.ning.internal.AcceptEncodingRequestFilter;
 import com.hubspot.horizon.ning.internal.EmptyCallback;
 import com.hubspot.horizon.ning.internal.NingCompletionHandler;
 import com.hubspot.horizon.ning.internal.NingFuture;
@@ -33,6 +34,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
 
     AsyncHttpClientConfig ningConfig = new AsyncHttpClientConfig.Builder()
             .addRequestFilter(new ThrottleRequestFilter(config.getMaxConnections()))
+            .addRequestFilter(new AcceptEncodingRequestFilter())
             .setMaximumConnectionsPerHost(config.getMaxConnectionsPerHost())
             .setConnectionTimeoutInMs(config.getConnectTimeoutMillis())
             .setRequestTimeoutInMs(config.getRequestTimeoutMillis())

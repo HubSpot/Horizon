@@ -1,5 +1,6 @@
 package com.hubspot.horizon;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.net.HttpHeaders;
 import org.eclipse.jetty.http.HttpVersion;
@@ -101,6 +102,8 @@ public class TestServer {
 
         response.setStatus(expectedResponse.getStatusCode());
         response.addHeader("X-Request-Count", String.valueOf(incrementAndGetRequestCount(expectedResponse)));
+        response.addHeader("Request-Content-Encoding", inputEncoding);
+        response.addHeader("Response-Content-Encoding", expectedResponse.getHeader(HttpHeaders.CONTENT_ENCODING));
         for (Entry<String, List<String>> entry : expectedResponse.getHeaders().entrySet()) {
           String name = entry.getKey();
 
@@ -121,7 +124,8 @@ public class TestServer {
             outputStream = response.getOutputStream();
           }
 
-          outputStream.write(expectedResponse.getBody());
+          outputStream.write(expectedResponse.getBody().getBytes(Charsets.UTF_8));
+          outputStream.close();
         }
       }
     };

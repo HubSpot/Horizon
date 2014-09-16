@@ -1,5 +1,6 @@
 package com.hubspot.horizon.ning.internal;
 
+import com.google.common.net.HttpHeaders;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpResponse;
 import com.ning.http.client.AsyncCompletionHandler;
@@ -21,6 +22,9 @@ public class NingCompletionHandler extends AsyncCompletionHandler<HttpResponse> 
   @Override
   public HttpResponse onCompleted(Response ningResponse) throws Exception {
     HttpResponse response = new NingHttpResponse(request, ningResponse);
+    if ("snappy".equals(ningResponse.getHeader(HttpHeaders.CONTENT_ENCODING))) {
+      response = new SnappyHttpResponseWrapper(response);
+    }
     if (retryHandler.shouldRetry(request, response)) {
       retryHandler.retry();
     } else {

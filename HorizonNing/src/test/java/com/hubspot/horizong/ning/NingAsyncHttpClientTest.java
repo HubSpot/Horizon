@@ -1,6 +1,7 @@
 package com.hubspot.horizong.ning;
 
 import com.hubspot.horizon.AsyncHttpClient;
+import com.hubspot.horizon.Compression;
 import com.hubspot.horizon.ExpectedHttpResponse;
 import com.hubspot.horizon.HttpConfig;
 import com.hubspot.horizon.HttpRequest;
@@ -48,7 +49,7 @@ public class NingAsyncHttpClientTest {
             .build();
     HttpResponse response = httpClient.execute(request).get();
 
-    assertThat(response).hasStatusCode(200).hasBody("".getBytes()).hasRetries(0);
+    assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
   }
 
   @Test
@@ -62,7 +63,7 @@ public class NingAsyncHttpClientTest {
             .build();
     HttpResponse response = httpClient.execute(request).get();
 
-    assertThat(response).hasStatusCode(200).hasBody("".getBytes()).hasRetries(0);
+    assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
   }
 
   @Test
@@ -76,6 +77,78 @@ public class NingAsyncHttpClientTest {
             .build();
     HttpResponse response = httpClient.execute(request).get();
 
-    assertThat(response).hasStatusCode(500).hasBody("".getBytes()).hasRetries(1);
+    assertThat(response).hasStatusCode(500).hasBody("").hasRetries(1);
+  }
+
+  @Test
+  public void itCompressesWithGzip() throws Exception {
+    httpClient = new NingAsyncHttpClient();
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .setMethod(Method.POST)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().build())
+            .setCompression(Compression.GZIP)
+            .build();
+    HttpResponse response = httpClient.execute(request).get();
+
+    assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0).wasGzipCompressed();
+  }
+
+  @Test
+  public void itCompressesWithSnappy() throws Exception {
+    httpClient = new NingAsyncHttpClient();
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .setMethod(Method.POST)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().build())
+            .setCompression(Compression.SNAPPY)
+            .build();
+    HttpResponse response = httpClient.execute(request).get();
+
+    assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0).wasSnappyCompressed();
+  }
+
+  @Test
+  public void itReturnsCorrectResponseBody() throws Exception {
+    httpClient = new NingAsyncHttpClient();
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .setMethod(Method.POST)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
+            .build();
+    HttpResponse response = httpClient.execute(request).get();
+
+    assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0);
+  }
+
+  @Test
+  public void itDecompressesWithGzip() throws Exception {
+    httpClient = new NingAsyncHttpClient();
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .setMethod(Method.POST)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().setBody("test").setCompression(Compression.GZIP).build())
+            .build();
+    HttpResponse response = httpClient.execute(request).get();
+
+    assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0).isGzipCompressed();
+  }
+
+  @Test
+  public void itDecompressesWithSnappy() throws Exception {
+    httpClient = new NingAsyncHttpClient();
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .setMethod(Method.POST)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().setBody("test").setCompression(Compression.SNAPPY).build())
+            .build();
+    HttpResponse response = httpClient.execute(request).get();
+
+    assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0).isSnappyCompressed();
   }
 }

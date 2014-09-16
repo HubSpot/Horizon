@@ -2,8 +2,10 @@ package com.hubspot.horizon;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.google.common.net.HttpHeaders;
 
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
@@ -15,12 +17,12 @@ import java.util.UUID;
 public class ExpectedHttpResponse {
   private final int statusCode;
   private final Map<String, List<String>> headers;
-  private final byte[] body;
+  private final String body;
 
   @JsonCreator
   private ExpectedHttpResponse(@JsonProperty("statusCode") int statusCode,
                                @JsonProperty("headers") Map<String, List<String>> headers,
-                               @JsonProperty("body") @Nullable byte[] body) {
+                               @JsonProperty("body") @Nullable String body) {
     this.statusCode = statusCode;
     this.headers = headers;
     this.body = body;
@@ -43,14 +45,15 @@ public class ExpectedHttpResponse {
     return values == null || values.isEmpty() ? null : values.get(0);
   }
 
-  public @Nullable byte[] getBody() {
+  public @Nullable String getBody() {
     return body;
   }
 
   public static class Builder {
     private int statusCode = HttpServletResponse.SC_OK;
     private Map<String, List<String>> headers = new HashMap<String, List<String>>();
-    private byte[] body = null;
+    private Compression compression = Compression.NONE;
+    private String body = null;
 
     private Builder() { }
 
@@ -59,23 +62,24 @@ public class ExpectedHttpResponse {
       return this;
     }
 
-    public Builder addHeader(String name, @Nullable String value) {
-      Preconditions.checkNotNull(name);
-      if (headers.containsKey(name)) {
-        headers.get(name).add(value);
-      } else {
-        headers.put(name, Lists.newArrayList(value));
-      }
+    public Builder setCompression(Compression compression) {
+      this.compression = Preconditions.checkNotNull(compression);
       return this;
     }
 
-    public Builder setBody(byte[] body) {
+    public Builder setBody(String body) {
       this.body = Preconditions.checkNotNull(body);
       return this;
     }
 
     public ExpectedHttpResponse build() {
       headers.put("X-Request-ID", Lists.newArrayList(UUID.randomUUID().toString()));
+
+      Optional<String> contentEncoding = compression.getContentEncodingHeaderValue();
+      if (contentEncoding.isPresent()) {
+        headers.put(HttpHeaders.CONTENT_ENCODING, Lists.newArrayList(contentEncoding.get()));
+      }
+
       return new ExpectedHttpResponse(statusCode, headers, body);
     }
   }

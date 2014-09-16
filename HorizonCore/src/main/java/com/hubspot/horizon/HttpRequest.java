@@ -158,7 +158,7 @@ public class HttpRequest {
     private final Map<String, List<String>> headers = new LinkedHashMap<String, List<String>>();
     private byte[] body = null;
     private final Map<String, List<String>> formParams = new LinkedHashMap<String, List<String>>();
-    private Codec compression = Codec.NONE;
+    private Compression compression = Compression.NONE;
     private ContentType contentType = null;
     private ContentType accept = null;
     private Options options = new Options();
@@ -216,7 +216,7 @@ public class HttpRequest {
       return this;
     }
 
-    public Builder setCompression(Codec compression) {
+    public Builder setCompression(Compression compression) {
       this.compression = Preconditions.checkNotNull(compression);
       return this;
     }
