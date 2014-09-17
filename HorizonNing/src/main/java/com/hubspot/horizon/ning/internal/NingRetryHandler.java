@@ -5,13 +5,13 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpRequest.Options;
 import com.hubspot.horizon.HttpResponse;
+import com.hubspot.horizon.RetryHelper;
 import com.hubspot.horizon.RetryStrategy;
 
 import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -53,14 +53,7 @@ public class NingRetryHandler implements RetryStrategy {
   }
 
   private int computeBackoff(int retries) {
-    int initialBackoff = options.getInitialRetryBackoffMillis();
-    int computedBackoff = nextInt(initialBackoff / 4) + (initialBackoff * retries * retries);
-
-    return Math.min(computedBackoff, options.getMaxRetryBackoffMillis());
-  }
-
-  private static int nextInt(int n) {
-    return ThreadLocalRandom.current().nextInt(Math.max(n, 1));
+    return RetryHelper.computeBackoff(options, retries);
   }
 
   private boolean retriesRemaining() {

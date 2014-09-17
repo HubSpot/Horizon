@@ -8,6 +8,7 @@ import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpRequest.Options;
 import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.HttpRuntimeException;
+import com.hubspot.horizon.RetryHelper;
 import com.hubspot.horizon.RetryStrategy;
 import com.hubspot.horizon.apache.internal.AcceptAllSSLSocketFactory;
 import com.hubspot.horizon.apache.internal.ApacheHttpRequestConverter;
@@ -34,7 +35,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -143,7 +143,7 @@ public class ApacheHttpClient implements HttpClient {
 
   private HttpResponse backoffAndRetry(HttpRequest request, Options options, int retries) throws IOException {
     try {
-      Thread.sleep(computeBackoff(options, retries));
+      Thread.sleep(RetryHelper.computeBackoff(options, retries));
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new HttpRuntimeException(e);
@@ -182,17 +182,6 @@ public class ApacheHttpClient implements HttpClient {
         LOG.warn("Error closing Apache response", e);
       }
     }
-  }
-
-  private int computeBackoff(Options options, int retries) {
-    int initialBackoff = options.getInitialRetryBackoffMillis();
-    int computedBackoff = nextInt(initialBackoff / 4) + (initialBackoff * retries * retries);
-
-    return Math.min(computedBackoff, options.getMaxRetryBackoffMillis());
-  }
-
-  private static int nextInt(int n) {
-    return ThreadLocalRandom.current().nextInt(Math.max(n, 1));
   }
 
   @Override
