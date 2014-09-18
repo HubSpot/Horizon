@@ -1,7 +1,5 @@
 package com.hubspot.horizon;
 
-import org.apache.http.NoHttpResponseException;
-
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import java.io.IOException;
@@ -23,7 +21,8 @@ public interface RetryStrategy {
 
     @Override
     public boolean shouldRetry(HttpRequest request, IOException exception) {
-      if (exception instanceof NoHttpResponseException) {
+      // avoid Apache dependency
+      if ("NoHttpResponseException".equals(exception.getClass().getSimpleName())) {
         return true;
       }
       if (exception instanceof InterruptedIOException) {

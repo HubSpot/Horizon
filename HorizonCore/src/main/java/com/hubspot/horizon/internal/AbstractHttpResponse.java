@@ -10,10 +10,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
+import com.google.common.net.HttpHeaders;
 import com.hubspot.horizon.HttpRequest.ContentType;
 import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.ObjectMapperHolder;
-import org.apache.http.HttpHeaders;
 
 import javax.annotation.Nullable;
 import java.io.IOException;

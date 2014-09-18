@@ -40,7 +40,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
             .setRequestTimeoutInMs(config.getRequestTimeoutMillis())
             .setMaximumNumberOfRedirects(config.getMaxRedirects())
             .setFollowRedirects(config.isFollowRedirects())
-            .setHostnameVerifier(NingHostnameVerifier.forConfig(config))
+            .setHostnameVerifier(new NingHostnameVerifier(config))
             .setSSLContext(NingSSLContext.forConfig(config))
             .setUserAgent(config.getUserAgent())
             .setCompressionEnabled(true)
