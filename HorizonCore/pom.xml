@@ -69,12 +69,17 @@
                             <artifactSet>
                                 <includes>
                                     <include>org.apache.httpcomponents:*</include>
+                                    <include>commons-codec:commons-codec</include>
                                 </includes>
                             </artifactSet>
                             <relocations>
                                 <relocation>
                                     <pattern>org.apache.http</pattern>
                                     <shadedPattern>org.apache.shaded.http</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.commons.codec</pattern>
+                                    <shadedPattern>org.apache.shaded.commons.codec</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
