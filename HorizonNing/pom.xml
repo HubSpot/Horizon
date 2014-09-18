@@ -3,7 +3,7 @@
     <parent>
         <artifactId>Horizon</artifactId>
         <groupId>com.hubspot</groupId>
-        <version>0.0.3-SNAPSHOT</version>
+        <version>0.0.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -12,7 +12,7 @@
         <dependency>
             <groupId>com.hubspot</groupId>
             <artifactId>HorizonCore</artifactId>
-            <version>0.0.3-SNAPSHOT</version>
+            <version>0.0.3</version>
         </dependency>
         <dependency>
             <groupId>com.ning</groupId>
@@ -22,7 +22,7 @@
         <dependency>
             <groupId>com.hubspot</groupId>
             <artifactId>HorizonCore</artifactId>
-            <version>0.0.3-SNAPSHOT</version>
+            <version>0.0.3</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
