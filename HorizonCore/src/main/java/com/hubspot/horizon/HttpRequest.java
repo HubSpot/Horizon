@@ -5,8 +5,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.net.HttpHeaders;
 import com.google.common.primitives.Ints;
-import org.apache.http.Header;
 import org.apache.http.NameValuePair;
+import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.auth.BasicScheme;
@@ -16,7 +16,6 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,11 +61,11 @@ public class HttpRequest {
 
   private final Method method;
   private final URI url;
-  private final Map<String, List<String>> headers;
+  private final Headers headers;
   private final byte[] body;
   private final Options options;
 
-  private HttpRequest(Method method, URI url, Map<String, List<String>> headers, @Nullable byte[] body, Options options) {
+  private HttpRequest(Method method, URI url, Headers headers, @Nullable byte[] body, Options options) {
     this.method = Preconditions.checkNotNull(method);
     this.url = Preconditions.checkNotNull(url);
     this.headers = Preconditions.checkNotNull(headers);
@@ -86,7 +85,7 @@ public class HttpRequest {
     return url;
   }
 
-  public Map<String, List<String>> getHeaders() {
+  public Headers getHeaders() {
     return headers;
   }
 
@@ -155,7 +154,7 @@ public class HttpRequest {
     private String url = null;
     private Method method = Method.GET;
     private final Map<String, List<String>> queryParams = new LinkedHashMap<String, List<String>>();
-    private final Map<String, List<String>> headers = new LinkedHashMap<String, List<String>>();
+    private final List<Header> headers = new ArrayList<Header>();
     private byte[] body = null;
     private final Map<String, List<String>> formParams = new LinkedHashMap<String, List<String>>();
     private Compression compression = Compression.NONE;
@@ -188,12 +187,12 @@ public class HttpRequest {
     }
 
     public Builder addQueryParam(String name, @Nullable String value) {
-      add(queryParams, name, value);
+      add(queryParams, Preconditions.checkNotNull(name), value);
       return this;
     }
 
-    public Builder addHeader(String name, @Nullable String value) {
-      add(headers, name, value);
+    public Builder addHeader(String name, String value) {
+      headers.add(new Header(name, value));
       return this;
     }
 
@@ -233,7 +232,8 @@ public class HttpRequest {
 
     public Builder addBasicAuth(String user, @Nullable String password) {
       Preconditions.checkNotNull(user);
-      Header header = BasicScheme.authenticate(new UsernamePasswordCredentials(user, password), UTF_8.name(), false);
+      Credentials credentials = new UsernamePasswordCredentials(user, password);
+      org.apache.http.Header header = BasicScheme.authenticate(credentials, UTF_8.name(), false);
       addHeader(header.getName(), header.getValue());
       return this;
     }
@@ -261,7 +261,7 @@ public class HttpRequest {
     public HttpRequest build() {
       URI url = buildUrl();
       byte[] body = buildBody();
-      Map<String, List<String>> headers = buildHeaders();
+      Headers headers = buildHeaders();
 
       return new HttpRequest(method, url, headers, body, options);
     }
@@ -298,23 +298,22 @@ public class HttpRequest {
       return compression.compress(body);
     }
 
-    private Map<String, List<String>> buildHeaders() {
+    private Headers buildHeaders() {
       Optional<String> contentEncodingHeaderValue = compression.getContentEncodingHeaderValue();
       if (contentEncodingHeaderValue.isPresent()) {
-        headers.put(HttpHeaders.CONTENT_ENCODING, Collections.singletonList(contentEncodingHeaderValue.get()));
+        headers.add(new Header(HttpHeaders.CONTENT_ENCODING, contentEncodingHeaderValue.get()));
       }
       if (contentType != null) {
-        headers.put(HttpHeaders.CONTENT_TYPE, Collections.singletonList(contentType.getHeaderValue()));
+        headers.add(new Header(HttpHeaders.CONTENT_TYPE, contentType.getHeaderValue()));
       }
       if (accept != null) {
-        headers.put(HttpHeaders.ACCEPT, Collections.singletonList(accept.getHeaderValue()));
+        headers.add(new Header(HttpHeaders.ACCEPT, accept.getHeaderValue()));
       }
 
-      return headers;
+      return new Headers(headers);
     }
 
     private static void add(Map<String, List<String>> parameters, String name, @Nullable String value) {
-      Preconditions.checkNotNull(name);
       if (parameters.containsKey(name)) {
         parameters.get(name).add(value);
       } else {

@@ -1,6 +1,7 @@
 package com.hubspot.horizon.ning.internal;
 
 import com.google.common.base.Preconditions;
+import com.hubspot.horizon.Headers;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.internal.AbstractHttpResponse;
@@ -31,7 +32,7 @@ public class SnappyHttpResponseWrapper extends AbstractHttpResponse {
   }
 
   @Override
-  public Map<String, List<String>> getHeaders() {
+  public Headers getHeaders() {
     return delegate.getHeaders();
   }
 

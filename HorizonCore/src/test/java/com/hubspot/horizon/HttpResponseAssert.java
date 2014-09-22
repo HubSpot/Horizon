@@ -1,7 +1,6 @@
 package com.hubspot.horizon;
 
 import com.google.common.base.Charsets;
-import com.google.common.net.HttpHeaders;
 import org.assertj.core.api.AbstractAssert;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,26 +47,26 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
   }
 
   public HttpResponseAssert wasGzipCompressed() {
-    assertThat(actual.getHeader("Request-Content-Encoding")).isEqualTo("gzip");
+    assertThat(actual.getHeaders().getFirst("Request-Content-Encoding")).isEqualTo("gzip");
     return this;
   }
 
   public HttpResponseAssert wasSnappyCompressed() {
-    assertThat(actual.getHeader("Request-Content-Encoding")).isEqualTo("snappy");
+    assertThat(actual.getHeaders().getFirst("Request-Content-Encoding")).isEqualTo("snappy");
     return this;
   }
 
   public HttpResponseAssert isGzipCompressed() {
-    assertThat(actual.getHeader("Response-Content-Encoding")).isEqualTo("gzip");
+    assertThat(actual.getHeaders().getFirst("Response-Content-Encoding")).isEqualTo("gzip");
     return this;
   }
 
   public HttpResponseAssert isSnappyCompressed() {
-    assertThat(actual.getHeader("Response-Content-Encoding")).isEqualTo("snappy");
+    assertThat(actual.getHeaders().getFirst("Response-Content-Encoding")).isEqualTo("snappy");
     return this;
   }
 
   private int retryCount(HttpResponse response) {
-    return Integer.parseInt(response.getHeader("X-Request-Count")) - 1;
+    return Integer.parseInt(response.getHeaders().getFirst("X-Request-Count")) - 1;
   }
 }

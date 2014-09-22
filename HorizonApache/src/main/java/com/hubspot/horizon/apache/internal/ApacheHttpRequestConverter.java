@@ -1,5 +1,6 @@
 package com.hubspot.horizon.apache.internal;
 
+import com.hubspot.horizon.Header;
 import com.hubspot.horizon.HttpRequest;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.client.methods.HttpDelete;
@@ -10,9 +11,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
-
-import java.util.List;
-import java.util.Map.Entry;
 
 public final class ApacheHttpRequestConverter {
 
@@ -50,11 +48,8 @@ public final class ApacheHttpRequestConverter {
       ((HttpEntityEnclosingRequest) apacheRequest).setEntity(new ByteArrayEntity(request.getBody()));
     }
 
-    for (Entry<String, List<String>> entry : request.getHeaders().entrySet()) {
-      String name = entry.getKey();
-      for (String value : entry.getValue()) {
-        apacheRequest.addHeader(name, value);
-      }
+    for (Header header : request.getHeaders()) {
+      apacheRequest.addHeader(header.getName(), header.getValue());
     }
 
     return apacheRequest;

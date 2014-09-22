@@ -1,11 +1,9 @@
 package com.hubspot.horizon.ning.internal;
 
+import com.hubspot.horizon.Header;
 import com.hubspot.horizon.HttpRequest;
 import com.ning.http.client.Request;
 import com.ning.http.client.RequestBuilder;
-
-import java.util.List;
-import java.util.Map.Entry;
 
 public final class NingHttpRequestConverter {
 
@@ -21,15 +19,13 @@ public final class NingHttpRequestConverter {
       ningRequest.setBody(request.getBody());
     }
 
-    for (Entry<String, List<String>> entry : request.getHeaders().entrySet()) {
-      String name = entry.getKey();
+    for (Header header : request.getHeaders()) {
+      String name = header.getName();
 
-      for (String value : entry.getValue()) {
-        if ("Host".equalsIgnoreCase(name)) {
-          ningRequest.setVirtualHost(value);
-        } else {
-          ningRequest.addHeader(name, value);
-        }
+      if ("Host".equalsIgnoreCase(name)) {
+        ningRequest.setVirtualHost(header.getValue());
+      } else {
+        ningRequest.addHeader(name, header.getValue());
       }
     }
 

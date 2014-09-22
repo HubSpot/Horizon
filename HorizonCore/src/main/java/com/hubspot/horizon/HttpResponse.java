@@ -4,10 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import javax.annotation.Nullable;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
 
 public interface HttpResponse {
   HttpRequest getRequest();
@@ -18,8 +15,7 @@ public interface HttpResponse {
   boolean isClientError();
   boolean isServerError();
 
-  Map<String, List<String>> getHeaders();
-  @Nullable String getHeader(String name);
+  Headers getHeaders();
 
   <T> T getAs(Class<T> clazz);
   <T> T getAs(TypeReference<T> type);

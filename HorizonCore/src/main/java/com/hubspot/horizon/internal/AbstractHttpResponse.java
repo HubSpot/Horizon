@@ -1,25 +1,19 @@
 package com.hubspot.horizon.internal;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
-import com.google.common.net.HttpHeaders;
-import com.hubspot.horizon.HttpRequest.ContentType;
 import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.ObjectMapperHolder;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.List;
 
 public abstract class AbstractHttpResponse implements HttpResponse {
 
@@ -47,17 +41,11 @@ public abstract class AbstractHttpResponse implements HttpResponse {
   }
 
   @Override
-  public @Nullable String getHeader(String name) {
-    List<String> values = getHeaders().get(name);
-    return values == null || values.isEmpty() ? null : values.get(0);
-  }
-
-  @Override
   public <T> T getAs(Class<T> clazz) {
     try {
       return getObjectMapper().readValue(getAsInputStream(), Preconditions.checkNotNull(clazz));
     } catch (IOException e) {
-      throw handleJsonParseException(e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -66,7 +54,7 @@ public abstract class AbstractHttpResponse implements HttpResponse {
     try {
       return getObjectMapper().readValue(getAsInputStream(), Preconditions.checkNotNull(type));
     } catch (IOException e) {
-      throw handleJsonParseException(e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -75,7 +63,7 @@ public abstract class AbstractHttpResponse implements HttpResponse {
     try {
       return getObjectMapper().readValue(getAsInputStream(), Preconditions.checkNotNull(type));
     } catch (IOException e) {
-      throw handleJsonParseException(e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -84,7 +72,7 @@ public abstract class AbstractHttpResponse implements HttpResponse {
     try {
       return getObjectMapper().readTree(getAsInputStream());
     } catch (IOException e) {
-      throw handleJsonParseException(e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -112,32 +100,5 @@ public abstract class AbstractHttpResponse implements HttpResponse {
 
   private ObjectMapper getObjectMapper() {
     return ObjectMapperHolder.INSTANCE.get();
-  }
-
-  private RuntimeException handleJsonParseException(IOException e) {
-    if (!isValidJson(getAsString())) {
-      checkHeader(HttpHeaders.CONTENT_TYPE, ContentType.JSON.getHeaderValue());
-    }
-
-    throw new RuntimeException(e);
-  }
-
-  private boolean isValidJson(String maybeJson) {
-    try {
-      getObjectMapper().readTree(maybeJson);
-      return true;
-    } catch(JsonProcessingException jpe) {
-      return false;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private void checkHeader(String header, String expectedValue) {
-    String actualValue = Strings.nullToEmpty(getHeader(header)).split(";")[0];
-    if (!actualValue.equals(expectedValue)) {
-      String message = String.format("Header '%s' has invalid value, expected '%s' but found '%s'", header, expectedValue, actualValue);
-      throw new IllegalStateException(message);
-    }
   }
 }

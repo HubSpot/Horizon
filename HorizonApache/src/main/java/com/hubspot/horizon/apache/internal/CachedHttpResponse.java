@@ -2,6 +2,7 @@ package com.hubspot.horizon.apache.internal;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.Closeables;
+import com.hubspot.horizon.Headers;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.internal.AbstractHttpResponse;
@@ -9,8 +10,6 @@ import com.hubspot.horizon.internal.AbstractHttpResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
 
 public class CachedHttpResponse extends AbstractHttpResponse {
   private final HttpResponse delegate;
@@ -42,7 +41,7 @@ public class CachedHttpResponse extends AbstractHttpResponse {
   }
 
   @Override
-  public Map<String, List<String>> getHeaders() {
+  public Headers getHeaders() {
     return delegate.getHeaders();
   }
 
