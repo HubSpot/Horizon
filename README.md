@@ -9,6 +9,18 @@ Java HTTP client interfaces designed to make interacting with REST services as u
 - Built-in retry functionality with exponential backoff
 - Free to mix and match synchronous and asynchronous clients
 
+## Usage
+
+The HorizonCore module contains all of the interfaces and domain objects. Horizon comes with two implementations, packaged in separate artifacts. The HorizonApache module contains an implementation of the synchronous `HttpClient` interface, built on top of Apache's httpclient 4. The HorizonNing module contains an implementation of both `HttpClient` and `AsyncHttpClient` built on top of com.ning:AsyncHttpClient. So if you just want to use the Apache-based client, you would add the following Maven dependency:
+
+```xml
+<dependency>
+  <groupId>com.hubspot.jackson</groupId>
+  <artifactId>HorizonApache</artifactId>
+  <version>0.0.4</version>
+</dependency>
+```
+
 ## Examples
 
 Using the synchronous `HttpClient` to retrieve a single `Widget` by ID:
