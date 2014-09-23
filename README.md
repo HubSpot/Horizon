@@ -21,6 +21,8 @@ The HorizonCore module contains all of the interfaces and domain objects. Horizo
 </dependency>
 ```
 
+And then you can instantiate a new `HttpClient` by doing `HttpClient httpClient = new ApacheHttpClient();`
+
 ## Examples
 
 Using the synchronous `HttpClient` to retrieve a single `Widget` by ID:
