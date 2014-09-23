@@ -15,7 +15,7 @@ The HorizonCore module contains all of the interfaces and domain objects. Horizo
 
 ```xml
 <dependency>
-  <groupId>com.hubspot.jackson</groupId>
+  <groupId>com.hubspot</groupId>
   <artifactId>HorizonApache</artifactId>
   <version>0.0.4</version>
 </dependency>
