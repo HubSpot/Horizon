@@ -36,11 +36,6 @@ public class NingFuture extends AbstractFuture<HttpResponse> {
     }
   }
 
-  @Override
-  public void interruptTask() {
-    callback.cancelled();
-  }
-
   private static final class CallbackWrapper implements Callback {
     private static final Logger LOG = LoggerFactory.getLogger(CallbackWrapper.class);
 
@@ -68,13 +63,8 @@ public class NingFuture extends AbstractFuture<HttpResponse> {
       }
     }
 
-    @Override
-    public void cancelled() {
-      try {
-        callback.cancelled();
-      } catch (Exception e) {
-        LOG.error("Exception in callback", e);
-      }
+    private void getByIds(int... ids) {
+
     }
   }
 }

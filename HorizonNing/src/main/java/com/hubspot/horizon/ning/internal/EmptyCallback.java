@@ -11,7 +11,4 @@ public enum EmptyCallback implements Callback {
 
   @Override
   public void failed(Exception e) { }
-
-  @Override
-  public void cancelled() { }
 }

@@ -15,6 +15,5 @@ public interface AsyncHttpClient extends Closeable {
   interface Callback {
     void completed(HttpResponse response);
     void failed(Exception e);
-    void cancelled();
   }
 }
