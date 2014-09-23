@@ -21,35 +21,6 @@ public Widget getById(int id) {
 }
 ```
 
-Using `AsyncHttpClient` to retrieve multiple widgets in parallel:
-
-```java
-public Collection<Widget> getByIds(int... ids) throws InterruptedException {
-    final Collection<Widget> widgets = new ConcurrentLinkedQueue<Widget>();    
-    final CountDownLatch latch = new CountDownLatch(ids.length);
-
-    for (int id : ids) {
-        HttpRequest request = HttpRequest.newBuilder().setUrl("http://widgets/" + id).build();
-        asyncHttpClient.execute(request, new Callback() {
-            
-            @Override
-            public void completed(HttpResponse response) {
-                latch.countDown();
-                widgets.add(response.getAs(Widget.class));
-            }
-
-            @Override
-            public void failed(Exception e) {
-                // error handling...
-            }        
-        });    
-    }
-
-    latch.await();
-    return widgets;
-}
-```
-
 Updating a widget:
 
 ```java
