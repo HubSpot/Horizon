@@ -17,7 +17,7 @@
         <dependency>
             <groupId>com.ning</groupId>
             <artifactId>async-http-client</artifactId>
-            <version>1.8.13</version>
+            <version>1.8.12</version>
         </dependency>
         <dependency>
             <groupId>com.hubspot</groupId>
