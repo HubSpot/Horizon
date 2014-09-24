@@ -9,13 +9,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 import com.hubspot.horizon.HttpResponse;
-import com.hubspot.horizon.ObjectMapperHolder;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public abstract class AbstractHttpResponse implements HttpResponse {
+
+  public abstract ObjectMapper getObjectMapper();
 
   @Override
   public boolean isSuccess() {
@@ -96,9 +97,5 @@ public abstract class AbstractHttpResponse implements HttpResponse {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private ObjectMapper getObjectMapper() {
-    return ObjectMapperHolder.INSTANCE.get();
   }
 }

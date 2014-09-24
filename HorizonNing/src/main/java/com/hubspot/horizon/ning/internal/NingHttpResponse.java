@@ -1,5 +1,6 @@
 package com.hubspot.horizon.ning.internal;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubspot.horizon.Header;
 import com.hubspot.horizon.Headers;
 import com.hubspot.horizon.HttpRequest;
@@ -18,12 +19,14 @@ public class NingHttpResponse extends AbstractHttpResponse {
   private final int statusCode;
   private final Headers headers;
   private final InputStream responseStream;
+  private final ObjectMapper mapper;
 
-  public NingHttpResponse(HttpRequest request, Response ningResponse) throws IOException {
+  public NingHttpResponse(HttpRequest request, Response ningResponse, ObjectMapper mapper) throws IOException {
     this.request = request;
     this.statusCode = ningResponse.getStatusCode();
     this.headers = convertHeaders(ningResponse.getHeaders());
     this.responseStream = ningResponse.getResponseBodyAsStream();
+    this.mapper = mapper;
   }
 
   private Headers convertHeaders(Map<String, List<String>> ningHeaders) {
@@ -38,6 +41,11 @@ public class NingHttpResponse extends AbstractHttpResponse {
     }
 
     return new Headers(headers);
+  }
+
+  @Override
+  public ObjectMapper getObjectMapper() {
+    return mapper;
   }
 
   @Override

@@ -42,6 +42,7 @@ public class ApacheHttpClient implements HttpClient {
   private static final Logger LOG = LoggerFactory.getLogger(ApacheHttpClient.class);
 
   private final org.apache.http.client.HttpClient apacheClient;
+  private final ApacheHttpRequestConverter requestConverter;
   private final HttpConfig config;
   private final Options defaultOptions;
   private final Timer timer;
@@ -76,6 +77,7 @@ public class ApacheHttpClient implements HttpClient {
     }
 
     this.apacheClient = apacheClient;
+    this.requestConverter = new ApacheHttpRequestConverter(config.getObjectMapper());
     this.config = config;
     this.defaultOptions = config.getOptions();
     this.timer = new Timer("http-request-timeout", true);
@@ -103,7 +105,7 @@ public class ApacheHttpClient implements HttpClient {
     int maxRetries = options.getMaxRetries();
     RetryStrategy retryStrategy = options.getRetryStrategy();
 
-    HttpUriRequest apacheRequest = ApacheHttpRequestConverter.convert(request);
+    HttpUriRequest apacheRequest = requestConverter.convert(request);
     org.apache.http.HttpResponse apacheResponse = null;
     AtomicBoolean timedOut = new AtomicBoolean(false);
     try {
@@ -112,7 +114,7 @@ public class ApacheHttpClient implements HttpClient {
       final HttpResponse response;
       try {
         apacheResponse = apacheClient.execute(apacheRequest);
-        response = CachedHttpResponse.from(new ApacheHttpResponse(request, apacheResponse));
+        response = CachedHttpResponse.from(new ApacheHttpResponse(request, apacheResponse, config.getObjectMapper()));
       } finally {
         // once this is done the timeout can be canceled
         timeoutTask.cancel();

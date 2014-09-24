@@ -1,5 +1,6 @@
 package com.hubspot.horizon.apache.internal;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Closeables;
 import com.hubspot.horizon.Headers;
@@ -12,10 +13,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class CachedHttpResponse extends AbstractHttpResponse {
-  private final HttpResponse delegate;
+  private final AbstractHttpResponse delegate;
   private final byte[] responseBytes;
 
-  private CachedHttpResponse(HttpResponse delegate) throws IOException {
+  private CachedHttpResponse(AbstractHttpResponse delegate) throws IOException {
     this.delegate = Preconditions.checkNotNull(delegate);
     try {
       this.responseBytes = delegate.getAsBytes();
@@ -26,8 +27,13 @@ public class CachedHttpResponse extends AbstractHttpResponse {
     }
   }
 
-  public static HttpResponse from(HttpResponse response) throws IOException {
+  public static HttpResponse from(AbstractHttpResponse response) throws IOException {
     return response instanceof CachedHttpResponse ? response : new CachedHttpResponse(response);
+  }
+
+  @Override
+  public ObjectMapper getObjectMapper() {
+    return delegate.getObjectMapper();
   }
 
   @Override

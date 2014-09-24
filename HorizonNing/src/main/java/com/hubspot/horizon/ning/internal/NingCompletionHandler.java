@@ -1,8 +1,10 @@
 package com.hubspot.horizon.ning.internal;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.net.HttpHeaders;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpResponse;
+import com.hubspot.horizon.internal.AbstractHttpResponse;
 import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.Response;
 
@@ -12,16 +14,21 @@ public class NingCompletionHandler extends AsyncCompletionHandler<HttpResponse> 
   private final HttpRequest request;
   private final NingFuture future;
   private final NingRetryHandler retryHandler;
+  private final ObjectMapper mapper;
 
-  public NingCompletionHandler(HttpRequest request, NingFuture future, NingRetryHandler retryHandler) {
+  public NingCompletionHandler(HttpRequest request,
+                               NingFuture future,
+                               NingRetryHandler retryHandler,
+                               ObjectMapper mapper) {
     this.request = request;
     this.future = future;
     this.retryHandler = retryHandler;
+    this.mapper = mapper;
   }
 
   @Override
   public HttpResponse onCompleted(Response ningResponse) throws Exception {
-    HttpResponse response = new NingHttpResponse(request, ningResponse);
+    AbstractHttpResponse response = new NingHttpResponse(request, ningResponse, mapper);
     if ("snappy".equals(ningResponse.getHeader(HttpHeaders.CONTENT_ENCODING))) {
       response = new SnappyHttpResponseWrapper(response);
     }

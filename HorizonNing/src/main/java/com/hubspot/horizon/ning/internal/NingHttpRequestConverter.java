@@ -1,22 +1,25 @@
 package com.hubspot.horizon.ning.internal;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubspot.horizon.Header;
 import com.hubspot.horizon.HttpRequest;
 import com.ning.http.client.Request;
 import com.ning.http.client.RequestBuilder;
 
 public final class NingHttpRequestConverter {
+  private final ObjectMapper mapper;
 
-  private NingHttpRequestConverter() {
-    throw new AssertionError();
+  public NingHttpRequestConverter(ObjectMapper mapper) {
+    this.mapper = mapper;
   }
 
-  public static Request convert(HttpRequest request) {
+  public Request convert(HttpRequest request) {
     RequestBuilder ningRequest = new RequestBuilder(request.getMethod().name());
     ningRequest.setURI(request.getUrl());
 
-    if (request.getBody() != null && request.getMethod().allowsBody()) {
-      ningRequest.setBody(request.getBody());
+    byte[] body = request.getBody(mapper);
+    if (body != null) {
+      ningRequest.setBody(body);
     }
 
     for (Header header : request.getHeaders()) {

@@ -1,5 +1,6 @@
 package com.hubspot.horizon;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
 import com.hubspot.horizon.HttpRequest.Options;
@@ -21,6 +22,7 @@ public class HttpConfig {
   private final int initialRetryBackoffSeconds;
   private final int maxRetryBackoffSeconds;
   private final RetryStrategy retryStrategy;
+  private final ObjectMapper mapper;
 
   private HttpConfig(int maxConnections,
                      int maxConnectionsPerHost,
@@ -35,7 +37,8 @@ public class HttpConfig {
                      int maxRetries,
                      int initialRetryBackoffSeconds,
                      int maxRetryBackoffSeconds,
-                     RetryStrategy retryStrategy) {
+                     RetryStrategy retryStrategy,
+                     ObjectMapper mapper) {
     this.maxConnections = maxConnections;
     this.maxConnectionsPerHost = maxConnectionsPerHost;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
@@ -50,6 +53,7 @@ public class HttpConfig {
     this.initialRetryBackoffSeconds = initialRetryBackoffSeconds;
     this.maxRetryBackoffSeconds = maxRetryBackoffSeconds;
     this.retryStrategy = retryStrategy;
+    this.mapper = mapper;
   }
 
   public static Builder newBuilder() {
@@ -96,6 +100,10 @@ public class HttpConfig {
     return rejectRelativeRedirects;
   }
 
+  public ObjectMapper getObjectMapper() {
+    return mapper;
+  }
+
   public Options getOptions() {
     Options options = new Options();
 
@@ -122,6 +130,7 @@ public class HttpConfig {
     private int initialRetryBackoffSeconds = 1;
     private int maxRetryBackoffSeconds = 30;
     private RetryStrategy retryStrategy = RetryStrategy.DEFAULT;
+    private ObjectMapper mapper = new ObjectMapper();
 
     private Builder() { }
 
@@ -195,6 +204,11 @@ public class HttpConfig {
       return this;
     }
 
+    public Builder setObjectMapper(ObjectMapper mapper) {
+      this.mapper = Preconditions.checkNotNull(mapper);
+      return this;
+    }
+
     public HttpConfig build() {
       return new HttpConfig(maxConnections,
               maxConnectionsPerHost,
@@ -209,7 +223,8 @@ public class HttpConfig {
               maxRetries,
               initialRetryBackoffSeconds,
               maxRetryBackoffSeconds,
-              retryStrategy);
+              retryStrategy,
+              mapper);
     }
   }
 }

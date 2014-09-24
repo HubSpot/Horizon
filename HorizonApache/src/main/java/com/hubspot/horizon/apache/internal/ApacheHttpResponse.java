@@ -1,5 +1,6 @@
 package com.hubspot.horizon.apache.internal;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubspot.horizon.Header;
 import com.hubspot.horizon.Headers;
 import com.hubspot.horizon.HttpRequest;
@@ -17,12 +18,14 @@ public class ApacheHttpResponse extends AbstractHttpResponse {
   private final int statusCode;
   private final Headers headers;
   private final InputStream responseStream;
+  private final ObjectMapper mapper;
 
-  public ApacheHttpResponse(HttpRequest request, HttpResponse apacheResponse) throws IOException {
+  public ApacheHttpResponse(HttpRequest request, HttpResponse apacheResponse, ObjectMapper mapper) throws IOException {
     this.request = request;
     this.statusCode = apacheResponse.getStatusLine().getStatusCode();
     this.headers = convertHeaders(apacheResponse.getAllHeaders());
     this.responseStream = extractResponseStream(apacheResponse);
+    this.mapper = mapper;
   }
 
   private Headers convertHeaders(org.apache.http.Header[] apacheHeaders) {
@@ -43,6 +46,11 @@ public class ApacheHttpResponse extends AbstractHttpResponse {
       InputStream responseStream = entity.getContent();
       return responseStream == null ? EmptyInputStream.getInstance() : responseStream;
     }
+  }
+
+  @Override
+  public ObjectMapper getObjectMapper() {
+    return mapper;
   }
 
   @Override

@@ -1,5 +1,7 @@
 package com.hubspot.horizon;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -13,7 +15,6 @@ import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.message.BasicNameValuePair;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -62,14 +63,24 @@ public class HttpRequest {
   private final Method method;
   private final URI url;
   private final Headers headers;
+  private final Compression compression;
   private final byte[] body;
+  private final Object jsonBody;
   private final Options options;
 
-  private HttpRequest(Method method, URI url, Headers headers, @Nullable byte[] body, Options options) {
+  private HttpRequest(Method method,
+                      URI url,
+                      Headers headers,
+                      Compression compression,
+                      @Nullable byte[] body,
+                      @Nullable Object jsonBody,
+                      Options options) {
     this.method = Preconditions.checkNotNull(method);
     this.url = Preconditions.checkNotNull(url);
     this.headers = Preconditions.checkNotNull(headers);
+    this.compression = compression;
     this.body = body;
+    this.jsonBody = jsonBody;
     this.options = Preconditions.checkNotNull(options);
   }
 
@@ -89,8 +100,18 @@ public class HttpRequest {
     return headers;
   }
 
-  public @Nullable byte[] getBody() {
-    return body;
+  public @Nullable byte[] getBody(ObjectMapper mapper) {
+    if (body != null) {
+      return compression.compress(body);
+    } else if (jsonBody != null) {
+      try {
+        return compression.compress(mapper.writeValueAsBytes(jsonBody));
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException(e);
+      }
+    } else {
+      return null;
+    }
   }
 
   public Options getOptions() {
@@ -156,6 +177,7 @@ public class HttpRequest {
     private final Map<String, List<String>> queryParams = new LinkedHashMap<String, List<String>>();
     private final List<Header> headers = new ArrayList<Header>();
     private byte[] body = null;
+    private Object jsonBody = null;
     private final Map<String, List<String>> formParams = new LinkedHashMap<String, List<String>>();
     private Compression compression = Compression.NONE;
     private ContentType contentType = null;
@@ -196,13 +218,15 @@ public class HttpRequest {
       return this;
     }
 
-    public Builder setBody(Object body) {
-      try {
-        setBody(ObjectMapperHolder.INSTANCE.get().writeValueAsBytes(body));
-        setContentType(ContentType.JSON);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+    public Builder addFormParam(String name, @Nullable String value) {
+      add(formParams, Preconditions.checkNotNull(name), value);
+      setContentType(ContentType.FORM);
+      return this;
+    }
+
+    public Builder setBody(Object jsonBody) {
+      this.jsonBody = Preconditions.checkNotNull(jsonBody);
+      setContentType(ContentType.JSON);
       return this;
     }
 
@@ -260,10 +284,10 @@ public class HttpRequest {
 
     public HttpRequest build() {
       URI url = buildUrl();
-      byte[] body = buildBody();
       Headers headers = buildHeaders();
+      validateBodyState();
 
-      return new HttpRequest(method, url, headers, body, options);
+      return new HttpRequest(method, url, headers, compression, body, jsonBody, options);
     }
 
     private URI buildUrl() {
@@ -277,25 +301,21 @@ public class HttpRequest {
       }
     }
 
-    private @Nullable byte[] buildBody() {
-      if (body == null && formParams.isEmpty()) {
-        return null;
+    private void validateBodyState() {
+      if (body == null && jsonBody == null && formParams.isEmpty()) {
+        return;
       }
 
-      Preconditions.checkArgument(body == null || formParams.isEmpty(), "Cannot set body and form params");
-      Preconditions.checkArgument(method.allowsBody(), "Cannot set body with method " + method);
+      Preconditions.checkState(method.allowsBody(), "Cannot set body with method " + method);
 
-      final byte[] body;
-      if (formParams.isEmpty()) {
-        body = this.body;
+      if (body != null) {
+        Preconditions.checkState(jsonBody == null && formParams.isEmpty(), "Cannot set more than one body");
+      } else if (jsonBody != null) {
+        Preconditions.checkState(body == null && formParams.isEmpty(), "Cannot set more than one body");
       } else {
+        Preconditions.checkState(body == null && jsonBody == null, "Cannot set more than one body");
         body = urlEncode(formParams).getBytes(UTF_8);
-        if (contentType == null) {
-          contentType = ContentType.FORM;
-        }
       }
-
-      return compression.compress(body);
     }
 
     private Headers buildHeaders() {

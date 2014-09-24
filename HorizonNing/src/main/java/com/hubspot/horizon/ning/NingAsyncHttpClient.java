@@ -1,5 +1,6 @@
 package com.hubspot.horizon.ning;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.hubspot.horizon.AsyncHttpClient;
@@ -23,7 +24,9 @@ import java.io.IOException;
 
 public class NingAsyncHttpClient implements AsyncHttpClient {
   private final com.ning.http.client.AsyncHttpClient ningClient;
+  private final NingHttpRequestConverter requestConverter;
   private final Options defaultOptions;
+  private final ObjectMapper mapper;
 
   public NingAsyncHttpClient() {
     this(HttpConfig.newBuilder().build());
@@ -48,7 +51,9 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
             .build();
 
     this.ningClient = new com.ning.http.client.AsyncHttpClient(ningConfig);
+    this.requestConverter = new NingHttpRequestConverter(config.getObjectMapper());
     this.defaultOptions = config.getOptions();
+    this.mapper = config.getObjectMapper();
   }
 
   @Override
@@ -79,8 +84,8 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
     NingRetryHandler retryHandler = new NingRetryHandler(defaultOptions.mergeFrom(options));
     NingFuture future = new NingFuture(callback);
 
-    final NingCompletionHandler completionHandler = new NingCompletionHandler(request, future, retryHandler);
-    final Request ningRequest = NingHttpRequestConverter.convert(request);
+    final NingCompletionHandler completionHandler = new NingCompletionHandler(request, future, retryHandler, mapper);
+    final Request ningRequest = requestConverter.convert(request);
     Runnable runnable = new Runnable() {
 
       @Override

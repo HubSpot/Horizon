@@ -1,5 +1,6 @@
 package com.hubspot.horizon.apache.internal;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubspot.horizon.Header;
 import com.hubspot.horizon.HttpRequest;
 import org.apache.http.HttpEntityEnclosingRequest;
@@ -13,12 +14,13 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
 
 public final class ApacheHttpRequestConverter {
+  private final ObjectMapper mapper;
 
-  private ApacheHttpRequestConverter() {
-    throw new AssertionError();
+  public ApacheHttpRequestConverter(ObjectMapper mapper) {
+    this.mapper = mapper;
   }
 
-  public static HttpUriRequest convert(HttpRequest request) {
+  public HttpUriRequest convert(HttpRequest request) {
     final HttpUriRequest apacheRequest;
 
     switch (request.getMethod()) {
@@ -44,8 +46,9 @@ public final class ApacheHttpRequestConverter {
         throw new IllegalArgumentException("Unrecognized request method: " + request.getMethod());
     }
 
-    if (request.getBody() != null && apacheRequest instanceof HttpEntityEnclosingRequest) {
-      ((HttpEntityEnclosingRequest) apacheRequest).setEntity(new ByteArrayEntity(request.getBody()));
+    byte[] body = request.getBody(mapper);
+    if (body != null && apacheRequest instanceof HttpEntityEnclosingRequest) {
+      ((HttpEntityEnclosingRequest) apacheRequest).setEntity(new ByteArrayEntity(body));
     }
 
     for (Header header : request.getHeaders()) {

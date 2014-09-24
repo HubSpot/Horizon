@@ -1,5 +1,6 @@
 package com.hubspot.horizon;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.net.HttpHeaders;
@@ -37,12 +38,14 @@ public class TestServer {
   private final Server server;
   private final NetworkConnector httpConnector;
   private final NetworkConnector httpsConnector;
+  private final ObjectMapper mapper;
   private final ConcurrentMap<String, AtomicInteger> requestCounts;
 
   public TestServer() {
     this.server = new Server();
     this.httpConnector = buildHttpConnector(server);
     this.httpsConnector = buildHttpsConnector(server);
+    this.mapper = new ObjectMapper();
     this.requestCounts = new ConcurrentHashMap<String, AtomicInteger>();
     server.setConnectors(new Connector[] { httpConnector, httpsConnector });
     server.setHandler(buildHandler());
@@ -98,7 +101,7 @@ public class TestServer {
           inputStream = request.getInputStream();
         }
 
-        ExpectedHttpResponse expectedResponse = ObjectMapperHolder.INSTANCE.get().readValue(inputStream, ExpectedHttpResponse.class);
+        ExpectedHttpResponse expectedResponse = mapper.readValue(inputStream, ExpectedHttpResponse.class);
 
         response.setStatus(expectedResponse.getStatusCode());
         response.addHeader("X-Request-Count", String.valueOf(incrementAndGetRequestCount(expectedResponse)));
