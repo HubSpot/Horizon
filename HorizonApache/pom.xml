@@ -48,11 +48,10 @@
                         </goals>
                         <configuration>
                             <shadedArtifactAttached>false</shadedArtifactAttached>
-                            <createDependencyReducedPom>false</createDependencyReducedPom>
                             <artifactSet>
-                                <excludes>
-                                    <include>*:*</include>
-                                </excludes>
+                                <includes>
+                                    <include>com.hubspot:HorizonApache</include>
+                                </includes>
                             </artifactSet>
                             <relocations>
                                 <relocation>
