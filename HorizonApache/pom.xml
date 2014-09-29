@@ -50,7 +50,7 @@
                             <shadedArtifactAttached>false</shadedArtifactAttached>
                             <artifactSet>
                                 <includes>
-                                    <include>com.hubspot:HorizonApache</include>
+                                    <include>com.hubspot:HorizonCore</include>
                                 </includes>
                             </artifactSet>
                             <relocations>
