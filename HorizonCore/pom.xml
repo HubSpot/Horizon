@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.hubspot</groupId>
         <artifactId>Horizon</artifactId>
-        <version>0.0.9</version>
+        <version>0.0.10-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

@@ -19,7 +19,7 @@
     <groupId>com.hubspot</groupId>
     <artifactId>Horizon</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.9</version>
+    <version>0.0.10-SNAPSHOT</version>
     <name>Horizon</name>
     <description>Simple interfaces for making HTTP requests</description>
     <url>https://github.com/HubSpot/Horizon</url>
