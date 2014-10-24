@@ -10,9 +10,9 @@ import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.HttpRuntimeException;
 import com.hubspot.horizon.RetryHelper;
 import com.hubspot.horizon.RetryStrategy;
-import com.hubspot.horizon.apache.internal.AcceptAllSSLSocketFactory;
 import com.hubspot.horizon.apache.internal.ApacheHttpRequestConverter;
 import com.hubspot.horizon.apache.internal.ApacheHttpResponse;
+import com.hubspot.horizon.apache.internal.ApacheSSLSocketFactory;
 import com.hubspot.horizon.apache.internal.CachedHttpResponse;
 import com.hubspot.horizon.apache.internal.DefaultHeadersRequestInterceptor;
 import com.hubspot.horizon.apache.internal.KeepAliveWithDefaultStrategy;
@@ -70,11 +70,10 @@ public class ApacheHttpClient implements HttpClient {
     apacheClient.setKeepAliveStrategy(new KeepAliveWithDefaultStrategy(config.getDefaultKeepAliveMillis()));
     apacheClient.addRequestInterceptor(new DefaultHeadersRequestInterceptor(config));
     apacheClient.addResponseInterceptor(new SnappyContentEncodingResponseInterceptor());
-    if (config.isAcceptAllSSL()) {
-      SSLSocketFactory acceptAllSSLSocketFactory = AcceptAllSSLSocketFactory.newInstance();
-      Scheme acceptAllSSLScheme = new Scheme("https", 443, acceptAllSSLSocketFactory);
-      apacheClient.getConnectionManager().getSchemeRegistry().register(acceptAllSSLScheme);
-    }
+
+    SSLSocketFactory acceptAllSSLSocketFactory = ApacheSSLSocketFactory.forConfig(config.getSSLConfig());
+    Scheme acceptAllSSLScheme = new Scheme("https", 443, acceptAllSSLSocketFactory);
+    apacheClient.getConnectionManager().getSchemeRegistry().register(acceptAllSSLScheme);
 
     this.apacheClient = apacheClient;
     this.requestConverter = new ApacheHttpRequestConverter(config.getObjectMapper());

@@ -1,6 +1,6 @@
 package com.hubspot.horizon.ning.internal;
 
-import com.hubspot.horizon.HttpConfig;
+import com.hubspot.horizon.SSLConfig;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -15,18 +15,18 @@ public final class NingSSLContext {
     throw new AssertionError();
   }
 
-  public static SSLContext forConfig(HttpConfig config) {
-    return config.isAcceptAllSSL() ? acceptAllSSLContext() : standardSSLContext();
-  }
+  public static SSLContext forConfig(SSLConfig config) {
+    if (config.isAcceptAllSSL()) {
+      return acceptAllSSLContext();
+    } else {
+      try {
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(config.getKeyManagers(), config.getTrustManagers(), null);
 
-  private static SSLContext standardSSLContext() {
-    try {
-      SSLContext sslContext = SSLContext.getInstance("TLS");
-      sslContext.init(null, null, null);
-
-      return sslContext;
-    } catch (GeneralSecurityException e) {
-      throw new RuntimeException(e);
+        return sslContext;
+      } catch (GeneralSecurityException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 

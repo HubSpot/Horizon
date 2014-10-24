@@ -7,6 +7,7 @@ import com.hubspot.horizon.HttpConfig;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpRequest.Method;
 import com.hubspot.horizon.HttpResponse;
+import com.hubspot.horizon.SSLConfig;
 import com.hubspot.horizon.TestServer;
 import com.hubspot.horizon.ning.NingAsyncHttpClient;
 import org.assertj.core.util.Closeables;
@@ -16,7 +17,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static com.hubspot.horizon.Assertions.assertThat;
-
 
 public class NingAsyncHttpClientTest {
   private static final TestServer testServer = new TestServer();
@@ -54,7 +54,7 @@ public class NingAsyncHttpClientTest {
 
   @Test
   public void itWorksWithHttps() throws Exception {
-    httpClient = new NingAsyncHttpClient(HttpConfig.newBuilder().setAcceptAllSSL(true).build());
+    httpClient = new NingAsyncHttpClient(HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).build());
 
     HttpRequest request = HttpRequest.newBuilder()
             .setMethod(Method.POST)

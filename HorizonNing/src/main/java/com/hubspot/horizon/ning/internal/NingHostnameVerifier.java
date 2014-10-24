@@ -1,6 +1,6 @@
 package com.hubspot.horizon.ning.internal;
 
-import com.hubspot.horizon.HttpConfig;
+import com.hubspot.horizon.SSLConfig;
 
 import javax.annotation.Nullable;
 import javax.net.ssl.HostnameVerifier;
@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 public class NingHostnameVerifier implements HostnameVerifier {
   private final boolean acceptAllSSL;
 
-  public NingHostnameVerifier(HttpConfig config) {
+  public NingHostnameVerifier(SSLConfig config) {
     this.acceptAllSSL = config.isAcceptAllSSL();
   }
 
