@@ -7,6 +7,7 @@ import com.hubspot.horizon.HttpConfig;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpRequest.Method;
 import com.hubspot.horizon.HttpResponse;
+import com.hubspot.horizon.SSLConfig;
 import com.hubspot.horizon.TestServer;
 import org.assertj.core.util.Closeables;
 import org.junit.After;
@@ -15,7 +16,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static com.hubspot.horizon.Assertions.assertThat;
-
 
 public class ApacheHttpClientTest {
   private static final TestServer testServer = new TestServer();
@@ -53,7 +53,7 @@ public class ApacheHttpClientTest {
 
   @Test
   public void itWorksWithHttps() {
-    httpClient = new ApacheHttpClient(HttpConfig.newBuilder().setAcceptAllSSL(true).build());
+    httpClient = new ApacheHttpClient(HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).build());
 
     HttpRequest request = HttpRequest.newBuilder()
             .setMethod(Method.POST)

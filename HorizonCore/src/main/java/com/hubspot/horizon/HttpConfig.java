@@ -15,7 +15,6 @@ public class HttpConfig {
   private final int defaultKeepAliveSeconds;
   private final int maxRedirects;
   private final String userAgent;
-  private final boolean acceptAllSSL;
   private final boolean followRedirects;
   private final boolean rejectRelativeRedirects;
   private final int maxRetries;
@@ -23,6 +22,7 @@ public class HttpConfig {
   private final int maxRetryBackoffSeconds;
   private final RetryStrategy retryStrategy;
   private final ObjectMapper mapper;
+  private final SSLConfig sslConfig;
 
   private HttpConfig(int maxConnections,
                      int maxConnectionsPerHost,
@@ -31,14 +31,14 @@ public class HttpConfig {
                      int defaultKeepAliveSeconds,
                      int maxRedirects,
                      String userAgent,
-                     boolean acceptAllSSL,
                      boolean followRedirects,
                      boolean rejectRelativeRedirects,
                      int maxRetries,
                      int initialRetryBackoffSeconds,
                      int maxRetryBackoffSeconds,
                      RetryStrategy retryStrategy,
-                     ObjectMapper mapper) {
+                     ObjectMapper mapper,
+                     SSLConfig sslConfig) {
     this.maxConnections = maxConnections;
     this.maxConnectionsPerHost = maxConnectionsPerHost;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
@@ -46,7 +46,6 @@ public class HttpConfig {
     this.defaultKeepAliveSeconds = defaultKeepAliveSeconds;
     this.maxRedirects = maxRedirects;
     this.userAgent = userAgent;
-    this.acceptAllSSL = acceptAllSSL;
     this.followRedirects = followRedirects;
     this.rejectRelativeRedirects = rejectRelativeRedirects;
     this.maxRetries = maxRetries;
@@ -54,6 +53,7 @@ public class HttpConfig {
     this.maxRetryBackoffSeconds = maxRetryBackoffSeconds;
     this.retryStrategy = retryStrategy;
     this.mapper = mapper;
+    this.sslConfig = sslConfig;
   }
 
   public static Builder newBuilder() {
@@ -88,10 +88,6 @@ public class HttpConfig {
     return userAgent;
   }
 
-  public boolean isAcceptAllSSL() {
-    return acceptAllSSL;
-  }
-
   public boolean isFollowRedirects() {
     return followRedirects;
   }
@@ -102,6 +98,10 @@ public class HttpConfig {
 
   public ObjectMapper getObjectMapper() {
     return mapper;
+  }
+
+  public SSLConfig getSSLConfig() {
+    return sslConfig;
   }
 
   public Options getOptions() {
@@ -123,7 +123,6 @@ public class HttpConfig {
     private int defaultKeepAliveSeconds = 10;
     private int maxRedirects = 10;
     private String userAgent = "Horizon/0.0.1";
-    private boolean acceptAllSSL = false;
     private boolean followRedirects = true;
     private boolean rejectRelativeRedirects;
     private int maxRetries = 3;
@@ -131,6 +130,7 @@ public class HttpConfig {
     private int maxRetryBackoffSeconds = 30;
     private RetryStrategy retryStrategy = RetryStrategy.DEFAULT;
     private ObjectMapper mapper = new ObjectMapper();
+    private SSLConfig sslConfig = SSLConfig.standard();
 
     private Builder() { }
 
@@ -169,11 +169,6 @@ public class HttpConfig {
       return this;
     }
 
-    public Builder setAcceptAllSSL(boolean acceptAllSSL) {
-      this.acceptAllSSL = acceptAllSSL;
-      return this;
-    }
-
     public Builder setFollowRedirects(boolean followRedirects) {
       this.followRedirects = followRedirects;
       return this;
@@ -209,6 +204,11 @@ public class HttpConfig {
       return this;
     }
 
+    public Builder setSSLConfig(SSLConfig sslConfig) {
+      this.sslConfig = Preconditions.checkNotNull(sslConfig);
+      return this;
+    }
+
     public HttpConfig build() {
       return new HttpConfig(maxConnections,
               maxConnectionsPerHost,
@@ -217,14 +217,14 @@ public class HttpConfig {
               defaultKeepAliveSeconds,
               maxRedirects,
               userAgent,
-              acceptAllSSL,
               followRedirects,
               rejectRelativeRedirects,
               maxRetries,
               initialRetryBackoffSeconds,
               maxRetryBackoffSeconds,
               retryStrategy,
-              mapper);
+              mapper,
+              sslConfig);
     }
   }
 }
