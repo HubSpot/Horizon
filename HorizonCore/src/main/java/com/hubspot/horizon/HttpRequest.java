@@ -4,9 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.google.common.net.HttpHeaders;
 import com.google.common.primitives.Ints;
+import com.hubspot.horizon.internal.ParameterSetterImpl;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -26,6 +26,14 @@ import java.util.concurrent.TimeUnit;
 import static com.google.common.base.Charsets.UTF_8;
 
 public class HttpRequest {
+
+  public interface ParameterSetter {
+    Builder to(Iterable<String> value);
+    Builder to(String... value);
+    Builder to(boolean... value);
+    Builder to(int... value);
+    Builder to(long... value);
+  }
 
   public enum Method {
     GET(false), POST(true), PUT(true), DELETE(false), PATCH(true), HEAD(false);
@@ -196,32 +204,18 @@ public class HttpRequest {
       return this;
     }
 
-    public Builder addQueryParam(String name, boolean value) {
-      return addQueryParam(Preconditions.checkNotNull(name), String.valueOf(value));
-    }
-
-    public Builder addQueryParam(String name, int value) {
-      return addQueryParam(Preconditions.checkNotNull(name), String.valueOf(value));
-    }
-
-    public Builder addQueryParam(String name, long value) {
-      return addQueryParam(Preconditions.checkNotNull(name), String.valueOf(value));
-    }
-
-    public Builder addQueryParam(String name, @Nullable String value) {
-      add(queryParams, Preconditions.checkNotNull(name), value);
-      return this;
-    }
-
     public Builder addHeader(String name, String value) {
       headers.add(new Header(name, value));
       return this;
     }
 
-    public Builder addFormParam(String name, @Nullable String value) {
-      add(formParams, Preconditions.checkNotNull(name), value);
+    public ParameterSetter setQueryParam(String name) {
+      return new ParameterSetterImpl(Preconditions.checkNotNull(name), this, queryParams);
+    }
+
+    public ParameterSetter setFormParam(String name) {
       setContentType(ContentType.FORM);
-      return this;
+      return new ParameterSetterImpl(Preconditions.checkNotNull(name), this, formParams);
     }
 
     public Builder setBody(Object jsonBody) {
@@ -331,14 +325,6 @@ public class HttpRequest {
       }
 
       return new Headers(headers);
-    }
-
-    private static void add(Map<String, List<String>> parameters, String name, @Nullable String value) {
-      if (parameters.containsKey(name)) {
-        parameters.get(name).add(value);
-      } else {
-        parameters.put(name, Lists.newArrayList(value));
-      }
     }
 
     private static String urlEncode(Map<String, List<String>> parameters) {
