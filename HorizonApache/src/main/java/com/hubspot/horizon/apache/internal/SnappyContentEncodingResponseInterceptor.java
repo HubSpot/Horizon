@@ -11,10 +11,11 @@ import org.apache.http.client.protocol.ResponseContentEncoding;
 import org.apache.http.protocol.HttpContext;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Set;
 
 public class SnappyContentEncodingResponseInterceptor extends ResponseContentEncoding {
-  private static final Set<String> IGNORED_ENCODINGS = ImmutableSet.of("none", "utf8", "utf-8");
+  private static final Set<String> IGNORED_ENCODINGS = ImmutableSet.of("none", "utf8", "utf-8", "binary");
 
   @Override
   public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
@@ -23,10 +24,10 @@ public class SnappyContentEncodingResponseInterceptor extends ResponseContentEnc
       return;
     }
 
-    String encoding = Strings.nullToEmpty(encodingHeader.getValue());
+    String encoding = Strings.nullToEmpty(encodingHeader.getValue()).toLowerCase(Locale.ENGLISH);
     if ("snappy".equals(encoding) && response.getEntity() != null) {
       response.setEntity(new SnappyDecompressingEntity(response.getEntity()));
-    } else if (!IGNORED_ENCODINGS.contains(encoding.toLowerCase())) {
+    } else if (!IGNORED_ENCODINGS.contains(encoding)) {
       super.process(response, context);
     }
   }

@@ -20,13 +20,16 @@ import com.hubspot.horizon.apache.internal.LenientRedirectStrategy;
 import com.hubspot.horizon.apache.internal.SnappyContentEncodingResponseInterceptor;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.params.ClientPNames;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.PoolingClientConnectionManager;
-import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +44,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ApacheHttpClient implements HttpClient {
   private static final Logger LOG = LoggerFactory.getLogger(ApacheHttpClient.class);
 
-  private final org.apache.http.client.HttpClient apacheClient;
+  private final CloseableHttpClient apacheClient;
   private final ApacheHttpRequestConverter requestConverter;
   private final HttpConfig config;
   private final Options defaultOptions;
@@ -54,32 +57,49 @@ public class ApacheHttpClient implements HttpClient {
   public ApacheHttpClient(HttpConfig config) {
     Preconditions.checkNotNull(config);
 
-    PoolingClientConnectionManager connectionManager = new PoolingClientConnectionManager();
-    connectionManager.setMaxTotal(config.getMaxConnections());
-    connectionManager.setDefaultMaxPerRoute(config.getMaxConnectionsPerHost());
+    HttpClientBuilder builder = HttpClientBuilder.create();
 
-    DefaultHttpClient apacheClient = new DefaultHttpClient(connectionManager);
+    builder.setConnectionManager(createConnectionManager(config));
+    builder.setRedirectStrategy(new LenientRedirectStrategy());
+    builder.setKeepAliveStrategy(new KeepAliveWithDefaultStrategy(config.getDefaultKeepAliveMillis()));
+    builder.addInterceptorFirst(new DefaultHeadersRequestInterceptor(config));
+    builder.addInterceptorFirst(new SnappyContentEncodingResponseInterceptor());
+    builder.setDefaultRequestConfig(createRequestConfig(config));
+    builder.disableContentCompression();
 
-    apacheClient.getParams().setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, config.getConnectTimeoutMillis());
-    apacheClient.getParams().setIntParameter(CoreConnectionPNames.SO_TIMEOUT, config.getRequestTimeoutMillis());
-    apacheClient.getParams().setIntParameter(ClientPNames.MAX_REDIRECTS, config.getMaxRedirects());
-    apacheClient.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, config.isFollowRedirects());
-    apacheClient.getParams().setBooleanParameter(ClientPNames.REJECT_RELATIVE_REDIRECT, config.isRejectRelativeRedirects());
-
-    apacheClient.setRedirectStrategy(new LenientRedirectStrategy());
-    apacheClient.setKeepAliveStrategy(new KeepAliveWithDefaultStrategy(config.getDefaultKeepAliveMillis()));
-    apacheClient.addRequestInterceptor(new DefaultHeadersRequestInterceptor(config));
-    apacheClient.addResponseInterceptor(new SnappyContentEncodingResponseInterceptor());
-
-    SSLSocketFactory acceptAllSSLSocketFactory = ApacheSSLSocketFactory.forConfig(config.getSSLConfig());
-    Scheme acceptAllSSLScheme = new Scheme("https", 443, acceptAllSSLSocketFactory);
-    apacheClient.getConnectionManager().getSchemeRegistry().register(acceptAllSSLScheme);
-
-    this.apacheClient = apacheClient;
+    this.apacheClient = builder.build();
     this.requestConverter = new ApacheHttpRequestConverter(config.getObjectMapper());
     this.config = config;
     this.defaultOptions = config.getOptions();
     this.timer = new Timer("http-request-timeout", true);
+  }
+
+  private HttpClientConnectionManager createConnectionManager(HttpConfig config) {
+    Registry<ConnectionSocketFactory> registry = createSocketFactoryRegistry(config);
+    PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(registry);
+    connectionManager.setMaxTotal(config.getMaxConnections());
+    connectionManager.setDefaultMaxPerRoute(config.getMaxConnectionsPerHost());
+
+    return connectionManager;
+  }
+
+  private Registry<ConnectionSocketFactory> createSocketFactoryRegistry(HttpConfig config) {
+    RegistryBuilder<ConnectionSocketFactory> builder = RegistryBuilder.create();
+
+    builder.register("http", PlainConnectionSocketFactory.getSocketFactory());
+    builder.register("https", ApacheSSLSocketFactory.forConfig(config.getSSLConfig()));
+
+    return builder.build();
+  }
+
+  private RequestConfig createRequestConfig(HttpConfig config) {
+    return RequestConfig.custom()
+            .setConnectionRequestTimeout(config.getConnectTimeoutMillis())
+            .setSocketTimeout(config.getRequestTimeoutMillis())
+            .setRedirectsEnabled(config.isFollowRedirects())
+            .setMaxRedirects(config.getMaxRedirects())
+            .setRelativeRedirectsAllowed(config.isRejectRelativeRedirects())
+            .build();
   }
 
   @Override
@@ -187,6 +207,6 @@ public class ApacheHttpClient implements HttpClient {
 
   @Override
   public void close() throws IOException {
-    apacheClient.getConnectionManager().shutdown();
+    apacheClient.close();
   }
 }
