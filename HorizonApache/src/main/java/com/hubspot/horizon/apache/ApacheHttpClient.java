@@ -24,6 +24,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
+import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
@@ -65,6 +66,7 @@ public class ApacheHttpClient implements HttpClient {
     builder.addInterceptorFirst(new DefaultHeadersRequestInterceptor(config));
     builder.addInterceptorFirst(new SnappyContentEncodingResponseInterceptor());
     builder.setDefaultRequestConfig(createRequestConfig(config));
+    builder.setDefaultSocketConfig(createSocketConfig(config));
     builder.disableContentCompression();
 
     this.apacheClient = builder.build();
@@ -95,11 +97,16 @@ public class ApacheHttpClient implements HttpClient {
   private RequestConfig createRequestConfig(HttpConfig config) {
     return RequestConfig.custom()
             .setConnectionRequestTimeout(config.getConnectTimeoutMillis())
+            .setConnectTimeout(config.getConnectTimeoutMillis())
             .setSocketTimeout(config.getRequestTimeoutMillis())
             .setRedirectsEnabled(config.isFollowRedirects())
             .setMaxRedirects(config.getMaxRedirects())
             .setRelativeRedirectsAllowed(config.isRejectRelativeRedirects())
             .build();
+  }
+
+  private SocketConfig createSocketConfig(HttpConfig config) {
+    return SocketConfig.custom().setSoTimeout(config.getRequestTimeoutMillis()).build();
   }
 
   @Override
