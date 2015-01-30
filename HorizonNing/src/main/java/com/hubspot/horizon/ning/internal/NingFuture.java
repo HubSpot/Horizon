@@ -62,9 +62,5 @@ public class NingFuture extends AbstractFuture<HttpResponse> {
         LOG.error("Exception in callback", f);
       }
     }
-
-    private void getByIds(int... ids) {
-
-    }
   }
 }
