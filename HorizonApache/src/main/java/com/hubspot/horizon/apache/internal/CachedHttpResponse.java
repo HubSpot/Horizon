@@ -53,7 +53,7 @@ public class CachedHttpResponse extends AbstractHttpResponse {
 
   @Override
   public byte[] getAsBytes() {
-    return responseBytes;
+    return responseBytes.clone();
   }
 
   @Override

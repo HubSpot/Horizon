@@ -21,12 +21,14 @@ public class SSLConfig {
     this.acceptAllSSL = acceptAllSSL;
   }
 
-  public @Nullable KeyManager[] getKeyManagers() {
-    return keyManagers;
+  @Nullable
+  public KeyManager[] getKeyManagers() {
+    return keyManagers == null ? null : keyManagers.clone();
   }
 
-  public @Nullable TrustManager[] getTrustManagers() {
-    return trustManagers;
+  @Nullable
+  public TrustManager[] getTrustManagers() {
+    return trustManagers == null ? null : trustManagers.clone();
   }
 
   public boolean isAcceptAllSSL() {

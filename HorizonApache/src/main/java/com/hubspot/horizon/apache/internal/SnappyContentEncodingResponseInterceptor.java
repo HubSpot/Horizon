@@ -6,7 +6,6 @@ import com.google.common.net.HttpHeaders;
 import org.apache.http.Header;
 import org.apache.http.HttpException;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.entity.SnappyDecompressingEntity;
 import org.apache.http.client.protocol.ResponseContentEncoding;
 import org.apache.http.protocol.HttpContext;
 

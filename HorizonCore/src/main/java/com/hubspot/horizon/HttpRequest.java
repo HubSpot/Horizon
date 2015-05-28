@@ -108,7 +108,8 @@ public class HttpRequest {
     return headers;
   }
 
-  public @Nullable byte[] getBody(ObjectMapper mapper) {
+  @Nullable
+  public byte[] getBody(ObjectMapper mapper) {
     if (body != null) {
       return compression.compress(body);
     } else if (jsonBody != null) {

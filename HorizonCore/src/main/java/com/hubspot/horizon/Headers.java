@@ -38,7 +38,8 @@ public class Headers implements Iterable<Header> {
     return headers == null ? Collections.<String>emptyList() : headers;
   }
 
-  public @Nullable String getFirst(String name) {
+  @Nullable
+  public String getFirst(String name) {
     List<String> headers = get(Preconditions.checkNotNull(name).toLowerCase());
     return headers.isEmpty() ? null : headers.get(0);
   }

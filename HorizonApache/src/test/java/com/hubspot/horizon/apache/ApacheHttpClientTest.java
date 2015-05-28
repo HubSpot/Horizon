@@ -9,11 +9,12 @@ import com.hubspot.horizon.HttpRequest.Method;
 import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.SSLConfig;
 import com.hubspot.horizon.TestServer;
-import org.assertj.core.util.Closeables;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.IOException;
 
 import static com.hubspot.horizon.Assertions.assertThat;
 
@@ -33,8 +34,8 @@ public class ApacheHttpClientTest {
   }
 
   @After
-  public void cleanup() {
-    Closeables.closeQuietly(httpClient);
+  public void cleanup() throws IOException {
+    httpClient.close();
   }
 
   @Test
