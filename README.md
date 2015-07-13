@@ -1,6 +1,6 @@
 # Horizon
 
-Java HTTP client interfaces designed to make interacting with REST services as user-friendly as possible. Horizon classes use intuitive, fluent API's and leverage Jackson internally so that reading and writing JSON are first-class citizens.
+Java HTTP client interfaces designed to make interacting with REST services as user-friendly as possible. Horizon classes use intuitive, fluent APIs and leverage Jackson internally so that reading and writing JSON are first-class citizens.
 
 ## Features
 - Clean, simple interfaces
