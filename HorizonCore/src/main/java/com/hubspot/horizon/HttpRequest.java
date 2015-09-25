@@ -55,7 +55,8 @@ public class HttpRequest {
     XML("text/xml"),
     PROTOBUF("application/x-protobuf"),
     FORM("application/x-www-form-urlencoded"),
-    CSV("text/csv; charset=UTF-8");
+    CSV("text/csv; charset=UTF-8"),
+    OCTET_STREAM("application/octet-stream");
 
     private final String headerValue;
 
@@ -183,11 +184,11 @@ public class HttpRequest {
   public static class Builder {
     private String url = null;
     private Method method = Method.GET;
-    private final Map<String, List<String>> queryParams = new LinkedHashMap<String, List<String>>();
-    private final List<Header> headers = new ArrayList<Header>();
+    private final Map<String, List<String>> queryParams = new LinkedHashMap<>();
+    private final List<Header> headers = new ArrayList<>();
     private byte[] body = null;
     private Object jsonBody = null;
-    private final Map<String, List<String>> formParams = new LinkedHashMap<String, List<String>>();
+    private final Map<String, List<String>> formParams = new LinkedHashMap<>();
     private Compression compression = Compression.NONE;
     private ContentType contentType = null;
     private ContentType accept = null;
@@ -306,26 +307,35 @@ public class HttpRequest {
       if (body != null) {
         Preconditions.checkState(jsonBody == null && formParams.isEmpty(), "Cannot set more than one body");
       } else if (jsonBody != null) {
-        Preconditions.checkState(body == null && formParams.isEmpty(), "Cannot set more than one body");
+        Preconditions.checkState(formParams.isEmpty(), "Cannot set more than one body");
       } else {
-        Preconditions.checkState(body == null && jsonBody == null, "Cannot set more than one body");
         body = urlEncode(formParams).getBytes(UTF_8);
       }
     }
 
     private Headers buildHeaders() {
       Optional<String> contentEncodingHeaderValue = compression.getContentEncodingHeaderValue();
-      if (contentEncodingHeaderValue.isPresent()) {
+      if (contentEncodingHeaderValue.isPresent() && !headerPresent(HttpHeaders.CONTENT_ENCODING)) {
         headers.add(new Header(HttpHeaders.CONTENT_ENCODING, contentEncodingHeaderValue.get()));
       }
-      if (contentType != null) {
+      if (contentType != null && !headerPresent(HttpHeaders.CONTENT_TYPE)) {
         headers.add(new Header(HttpHeaders.CONTENT_TYPE, contentType.getHeaderValue()));
       }
-      if (accept != null) {
+      if (accept != null && !headerPresent(HttpHeaders.ACCEPT)) {
         headers.add(new Header(HttpHeaders.ACCEPT, accept.getHeaderValue()));
       }
 
       return new Headers(headers);
+    }
+
+    private boolean headerPresent(String headerName) {
+      for (Header header : headers) {
+        if (header.getName().equalsIgnoreCase(headerName)) {
+          return true;
+        }
+      }
+
+      return false;
     }
 
     private static String urlEncode(Map<String, List<String>> parameters) {
