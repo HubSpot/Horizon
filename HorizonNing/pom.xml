@@ -3,8 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>Horizon</artifactId>
         <groupId>com.hubspot</groupId>
+        <artifactId>Horizon</artifactId>
         <version>0.0.17-SNAPSHOT</version>
     </parent>
 

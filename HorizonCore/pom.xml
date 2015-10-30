@@ -6,7 +6,6 @@
         <groupId>com.hubspot</groupId>
         <artifactId>Horizon</artifactId>
         <version>0.0.17-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>HorizonCore</artifactId>
