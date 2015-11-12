@@ -61,7 +61,12 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <shadeTestJar>true</shadeTestJar>
+                            <shadeSourcesContent>true</shadeSourcesContent>
                             <shadedArtifactAttached>false</shadedArtifactAttached>
+                            <createDependencyReducedPom>true</createDependencyReducedPom>
+                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+                            <dependencyReducedPomLocation>${pom.path}</dependencyReducedPomLocation>
                             <artifactSet>
                                 <includes>
                                     <include>com.hubspot:HorizonApache</include>
