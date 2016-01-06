@@ -1,5 +1,8 @@
 package com.hubspot.horizon.apache.internal;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hubspot.horizon.Header;
+import com.hubspot.horizon.HttpRequest;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
@@ -8,10 +11,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hubspot.horizon.Header;
-import com.hubspot.horizon.HttpRequest;
 
 public final class ApacheHttpRequestConverter {
   private final ObjectMapper mapper;

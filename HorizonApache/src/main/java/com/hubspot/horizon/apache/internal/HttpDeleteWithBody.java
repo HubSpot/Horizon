@@ -1,10 +1,10 @@
 package com.hubspot.horizon.apache.internal;
 
-import java.net.URI;
-
 import org.apache.http.annotation.NotThreadSafe;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+
+import java.net.URI;
 
 @NotThreadSafe
 public class HttpDeleteWithBody extends HttpEntityEnclosingRequestBase {
