@@ -152,4 +152,18 @@ public class NingAsyncHttpClientTest {
 
     assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0).isSnappyCompressed();
   }
+
+  @Test
+  public void itSupportsDeleteWithBody() throws Exception {
+    httpClient = new NingAsyncHttpClient();
+
+    HttpRequest request = HttpRequest.newBuilder()
+        .setMethod(Method.DELETE)
+        .setUrl(testServer.baseHttpUrl())
+        .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
+        .build();
+    HttpResponse response = httpClient.execute(request).get();
+
+    assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0);
+  }
 }
