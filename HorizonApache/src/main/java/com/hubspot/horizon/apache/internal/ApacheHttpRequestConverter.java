@@ -1,10 +1,6 @@
 package com.hubspot.horizon.apache.internal;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hubspot.horizon.Header;
-import com.hubspot.horizon.HttpRequest;
 import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPatch;
@@ -12,6 +8,10 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hubspot.horizon.Header;
+import com.hubspot.horizon.HttpRequest;
 
 public final class ApacheHttpRequestConverter {
   private final ObjectMapper mapper;
@@ -34,7 +34,7 @@ public final class ApacheHttpRequestConverter {
         apacheRequest = new HttpPut(request.getUrl());
         break;
       case DELETE:
-        apacheRequest = new HttpDelete(request.getUrl());
+        apacheRequest = new HttpDeleteWithBody(request.getUrl());
         break;
       case PATCH:
         apacheRequest = new HttpPatch(request.getUrl());
