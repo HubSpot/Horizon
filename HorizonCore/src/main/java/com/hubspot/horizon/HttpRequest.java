@@ -36,7 +36,7 @@ public class HttpRequest {
   }
 
   public enum Method {
-    GET(false), POST(true), PUT(true), DELETE(false), PATCH(true), HEAD(false);
+    GET(false), POST(true), PUT(true), DELETE(true), PATCH(true), HEAD(false);
 
     private final boolean allowsBody;
 
