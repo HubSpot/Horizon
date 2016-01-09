@@ -36,6 +36,11 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
     return this;
   }
 
+  public HttpResponseAssert hasHeader(String key, String value) {
+    assertThat(actual.getHeaders().getFirst(key)).isEqualTo(value);
+    return this;
+  }
+
   public HttpResponseAssert hasBody(String expected) {
     assertThat(actual.getAsBytes()).isEqualTo(expected.getBytes(Charsets.UTF_8));
     return this;

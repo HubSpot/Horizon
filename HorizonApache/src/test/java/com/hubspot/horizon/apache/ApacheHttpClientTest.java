@@ -153,6 +153,20 @@ public class ApacheHttpClientTest {
   }
 
   @Test
+  public void itSupportsGetWithBody() {
+    httpClient = new ApacheHttpClient();
+
+    HttpRequest request = HttpRequest.newBuilder()
+        .setMethod(Method.GET)
+        .setUrl(testServer.baseHttpUrl())
+        .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
+        .build();
+    HttpResponse response = httpClient.execute(request);
+
+    assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0);
+  }
+
+  @Test
   public void itSupportsDeleteWithBody() {
     httpClient = new ApacheHttpClient();
 
@@ -164,5 +178,19 @@ public class ApacheHttpClientTest {
     HttpResponse response = httpClient.execute(request);
 
     assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0);
+  }
+
+  @Test
+  public void itSupportsHeadWithBody() {
+    httpClient = new ApacheHttpClient();
+
+    HttpRequest request = HttpRequest.newBuilder()
+        .setMethod(Method.HEAD)
+        .setUrl(testServer.baseHttpUrl())
+        .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
+        .build();
+    HttpResponse response = httpClient.execute(request);
+
+    assertThat(response).hasStatusCode(200).hasHeader("X-Response-Body", "test").hasRetries(0);
   }
 }
