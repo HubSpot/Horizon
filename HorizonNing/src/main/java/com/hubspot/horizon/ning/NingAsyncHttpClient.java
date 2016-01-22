@@ -3,6 +3,7 @@ package com.hubspot.horizon.ning;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.hubspot.horizon.AsyncHttpClient;
 import com.hubspot.horizon.HttpConfig;
 import com.hubspot.horizon.HttpRequest;
@@ -17,12 +18,22 @@ import com.hubspot.horizon.ning.internal.NingHttpRequestConverter;
 import com.hubspot.horizon.ning.internal.NingRetryHandler;
 import com.hubspot.horizon.ning.internal.NingSSLContext;
 import com.ning.http.client.AsyncHttpClientConfig;
+import com.ning.http.client.AsyncHttpProviderConfig;
 import com.ning.http.client.Request;
 import com.ning.http.client.extra.ThrottleRequestFilter;
+import com.ning.http.client.providers.netty.NettyAsyncHttpProviderConfig;
+import org.jboss.netty.util.HashedWheelTimer;
 
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 public class NingAsyncHttpClient implements AsyncHttpClient {
+  private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder()
+      .setNameFormat("NingAsyncHttpClient-%d")
+      .setDaemon(true)
+      .build();
+
   private final com.ning.http.client.AsyncHttpClient ningClient;
   private final NingHttpRequestConverter requestConverter;
   private final Options defaultOptions;
@@ -45,6 +56,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
             .setFollowRedirects(config.isFollowRedirects())
             .setHostnameVerifier(new NingHostnameVerifier(config.getSSLConfig()))
             .setSSLContext(NingSSLContext.forConfig(config.getSSLConfig()))
+            .setAsyncHttpClientProviderConfig(asyncProviderConfig())
             .setUserAgent(config.getUserAgent())
             .setCompressionEnabled(true)
             .setIOThreadMultiplier(1)
@@ -101,6 +113,13 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
 
     runnable.run();
     return future;
+  }
+
+  private AsyncHttpProviderConfig<?, ?> asyncProviderConfig() {
+    NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
+    nettyConfig.addProperty(NettyAsyncHttpProviderConfig.BOSS_EXECUTOR_SERVICE, Executors.newCachedThreadPool(THREAD_FACTORY));
+    nettyConfig.setNettyTimer(new HashedWheelTimer(THREAD_FACTORY));
+    return nettyConfig;
   }
 
   @Override
