@@ -5,17 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.net.HttpHeaders;
+import com.google.common.net.UrlEscapers;
 import com.google.common.primitives.Ints;
 import com.hubspot.horizon.internal.ParameterSetterImpl;
-import org.apache.http.NameValuePair;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.commons.codec.binary.Base64;
 
 import javax.annotation.Nullable;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -252,9 +249,12 @@ public class HttpRequest {
 
     public Builder addBasicAuth(String user, @Nullable String password) {
       Preconditions.checkNotNull(user);
-      Credentials credentials = new UsernamePasswordCredentials(user, password);
-      org.apache.http.Header header = BasicScheme.authenticate(credentials, UTF_8.name(), false);
-      addHeader(header.getName(), header.getValue());
+      if (password == null) {
+        password = "null";
+      }
+
+      byte[] credentials = (user + ":" + password).getBytes(StandardCharsets.UTF_8);
+      addHeader(HttpHeaders.AUTHORIZATION, "Basic " + Base64.encodeBase64String(credentials));
       return this;
     }
 
@@ -339,19 +339,25 @@ public class HttpRequest {
     }
 
     private static String urlEncode(Map<String, List<String>> parameters) {
-      return URLEncodedUtils.format(toNameValuePairs(parameters), UTF_8);
-    }
+      StringBuilder result = new StringBuilder();
+      for (Entry<String, List<String>> parameter : parameters.entrySet()) {
+        String name = parameter.getKey();
+        for (String value : parameter.getValue()) {
+          if (result.length() > 0) {
+            result.append('&');
+          }
 
-    private static List<NameValuePair> toNameValuePairs(Map<String, List<String>> parameters) {
-      List<NameValuePair> pairs = new ArrayList<NameValuePair>();
-      for (Entry<String, List<String>> entry : parameters.entrySet()) {
-        String name = entry.getKey();
-        for (String value : entry.getValue()) {
-          pairs.add(new BasicNameValuePair(name, value));
+          result.append(UrlEscapers.urlFormParameterEscaper().escape(name));
+
+          if (value != null) {
+            result.append('=');
+            result.append(UrlEscapers.urlFormParameterEscaper().escape(value));
+          }
+
         }
       }
 
-      return pairs;
+      return result.toString();
     }
   }
 }
