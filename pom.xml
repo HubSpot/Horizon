@@ -10,7 +10,7 @@
 
   <artifactId>Horizon</artifactId>
   <packaging>pom</packaging>
-  <version>0.0.23</version>
+  <version>0.0.24-SNAPSHOT</version>
   <description>Simple interfaces for making HTTP requests</description>
   <url>https://github.com/HubSpot/Horizon</url>
 
@@ -18,7 +18,7 @@
     <connection>scm:git:git@github.com:HubSpot/Horizon.git</connection>
     <developerConnection>scm:git:git@github.com:HubSpot/Horizon.git</developerConnection>
     <url>git@github.com:HubSpot/Horizon.git</url>
-    <tag>Horizon-0.0.23</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <developers>
