@@ -22,17 +22,25 @@ import com.ning.http.client.AsyncHttpProviderConfig;
 import com.ning.http.client.Request;
 import com.ning.http.client.extra.ThrottleRequestFilter;
 import com.ning.http.client.providers.netty.NettyAsyncHttpProviderConfig;
+import org.jboss.netty.channel.socket.nio.NioClientBossPool;
+import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import org.jboss.netty.channel.socket.nio.NioWorkerPool;
 import org.jboss.netty.util.HashedWheelTimer;
+import org.jboss.netty.util.ThreadNameDeterminer;
+import org.jboss.netty.util.ThreadRenamingRunnable;
+import org.jboss.netty.util.Timer;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 public class NingAsyncHttpClient implements AsyncHttpClient {
-  private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder()
-      .setNameFormat("NingAsyncHttpClient-%d")
-      .setDaemon(true)
-      .build();
+  private static final ExecutorService BOSS_EXECUTOR = newExecutor("NioBoss");
+
+  static {
+    ThreadRenamingRunnable.setThreadNameDeterminer(ThreadNameDeterminer.CURRENT);
+  }
 
   private final com.ning.http.client.AsyncHttpClient ningClient;
   private final NingHttpRequestConverter requestConverter;
@@ -56,7 +64,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
             .setFollowRedirects(config.isFollowRedirects())
             .setHostnameVerifier(new NingHostnameVerifier(config.getSSLConfig()))
             .setSSLContext(NingSSLContext.forConfig(config.getSSLConfig()))
-            .setAsyncHttpClientProviderConfig(asyncProviderConfig())
+            .setAsyncHttpClientProviderConfig(newAsyncProviderConfig())
             .setUserAgent(config.getUserAgent())
             .setCompressionEnabled(true)
             .setIOThreadMultiplier(1)
@@ -115,11 +123,30 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
     return future;
   }
 
-  private AsyncHttpProviderConfig<?, ?> asyncProviderConfig() {
+  private static AsyncHttpProviderConfig<?, ?> newAsyncProviderConfig() {
     NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
-    nettyConfig.addProperty(NettyAsyncHttpProviderConfig.BOSS_EXECUTOR_SERVICE, Executors.newCachedThreadPool(THREAD_FACTORY));
-    nettyConfig.setNettyTimer(new HashedWheelTimer(THREAD_FACTORY));
+    nettyConfig.addProperty(NettyAsyncHttpProviderConfig.SOCKET_CHANNEL_FACTORY, newSocketChannelFactory());
+    nettyConfig.setNettyTimer(newTimer());
     return nettyConfig;
+  }
+
+  private static NioClientSocketChannelFactory newSocketChannelFactory() {
+    NioClientBossPool bossPool = new NioClientBossPool(BOSS_EXECUTOR, 1, newTimer(), ThreadNameDeterminer.CURRENT);
+    NioWorkerPool workerPool = new NioWorkerPool(newExecutor("NioWorker"), 5, ThreadNameDeterminer.CURRENT);
+    return new NioClientSocketChannelFactory(bossPool, workerPool);
+  }
+
+  private static ExecutorService newExecutor(String qualifier) {
+    return Executors.newCachedThreadPool(newThreadFactory(qualifier));
+  }
+
+  private static Timer newTimer() {
+    return new HashedWheelTimer(newThreadFactory("HashedWheelTimer"));
+  }
+
+  private static ThreadFactory newThreadFactory(String qualifier) {
+    String nameFormat = "NingAsyncHttpClient-" + qualifier + "-%d";
+    return new ThreadFactoryBuilder().setNameFormat(nameFormat).setDaemon(true).build();
   }
 
   @Override
