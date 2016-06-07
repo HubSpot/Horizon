@@ -106,4 +106,65 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <configuration combine.self="override">
+            <shadeTestJar>true</shadeTestJar>
+            <shadeSourcesContent>true</shadeSourcesContent>
+            <shadedArtifactAttached>false</shadedArtifactAttached>
+            <createDependencyReducedPom>true</createDependencyReducedPom>
+            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+            <dependencyReducedPomLocation>${pom.path}</dependencyReducedPomLocation>
+            <artifactSet>
+              <includes>
+                <include>com.google.guava:guava</include>
+              </includes>
+            </artifactSet>
+            <filters>
+              <filter>
+                <artifact>com.google.guava:guava</artifact>
+                <excludes>
+                  <exclude>com/google/common/base/Optional.class</exclude>
+                  <exclude>com/google/common/util/concurrent/ListenableFuture.class</exclude>
+                </excludes>
+              </filter>
+            </filters>
+            <relocations>
+              <relocation>
+                <pattern>com.google.common</pattern>
+                <shadedPattern>com.hubspot.horizon.shaded.com.google.common</shadedPattern>
+                <excludes>
+                  <exclude>com.google.common.base.Optional</exclude>
+                  <exclude>com.google.common.util.concurrent.ListenableFuture</exclude>
+                </excludes>
+              </relocation>
+              <relocation>
+                <pattern>com.google.thirdparty.publicsuffix</pattern>
+                <shadedPattern>com.hubspot.horizon.shaded.com.google.thirdparty.publicsuffix</shadedPattern>
+              </relocation>
+            </relocations>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

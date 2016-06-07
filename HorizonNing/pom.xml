@@ -48,43 +48,31 @@
     </dependencies>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <shadeTestJar>true</shadeTestJar>
-                            <shadeSourcesContent>true</shadeSourcesContent>
-                            <shadedArtifactAttached>false</shadedArtifactAttached>
-                            <createDependencyReducedPom>true</createDependencyReducedPom>
-                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
-                            <dependencyReducedPomLocation>${pom.path}</dependencyReducedPomLocation>
-                            <artifactSet>
-                                <includes>
-                                    <include>com.ning:async-http-client</include>
-                                    <include>io.netty:netty</include>
-                                </includes>
-                            </artifactSet>
-                            <relocations>
-                                <relocation>
-                                    <pattern>com.ning.http</pattern>
-                                    <shadedPattern>com.ning.shaded.http</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.jboss.netty</pattern>
-                                    <shadedPattern>org.jboss.shaded.netty</shadedPattern>
-                                </relocation>
-                            </relocations>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <configuration>
+                        <artifactSet>
+                            <includes combine.self="append">
+                                <include>com.ning:async-http-client</include>
+                                <include>io.netty:netty</include>
+                            </includes>
+                        </artifactSet>
+                        <relocations combine.self="append">
+                            <relocation>
+                                <pattern>com.ning.http</pattern>
+                                <shadedPattern>com.hubspot.horizon.shaded.com.ning.http</shadedPattern>
+                            </relocation>
+                            <relocation>
+                                <pattern>org.jboss.netty</pattern>
+                                <shadedPattern>com.hubspot.horizon.shaded.org.jboss.netty</shadedPattern>
+                            </relocation>
+                        </relocations>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 </project>
