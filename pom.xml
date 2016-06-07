@@ -143,6 +143,10 @@
                   <exclude>com.google.common.util.concurrent.ListenableFuture</exclude>
                 </excludes>
               </relocation>
+              <relocation>
+                <pattern>com.google.thirdparty.publicsuffix</pattern>
+                <shadedPattern>com.hubspot.horizon.shaded.com.google.thirdparty.publicsuffix</shadedPattern>
+              </relocation>
             </relocations>
           </configuration>
         </plugin>
