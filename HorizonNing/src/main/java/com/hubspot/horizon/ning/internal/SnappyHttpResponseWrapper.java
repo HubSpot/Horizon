@@ -35,6 +35,11 @@ public class SnappyHttpResponseWrapper extends AbstractHttpResponse {
   }
 
   @Override
+  public String getReasonPhrase() {
+    return delegate.getReasonPhrase();
+  }
+
+  @Override
   public Headers getHeaders() {
     return delegate.getHeaders();
   }
