@@ -17,6 +17,7 @@ import java.util.Map.Entry;
 public class NingHttpResponse extends AbstractHttpResponse {
   private final HttpRequest request;
   private final int statusCode;
+  private final String reasonPhrase;
   private final Headers headers;
   private final InputStream responseStream;
   private final ObjectMapper mapper;
@@ -24,6 +25,7 @@ public class NingHttpResponse extends AbstractHttpResponse {
   public NingHttpResponse(HttpRequest request, Response ningResponse, ObjectMapper mapper) throws IOException {
     this.request = request;
     this.statusCode = ningResponse.getStatusCode();
+    this.reasonPhrase = ningResponse.getStatusText();
     this.headers = convertHeaders(ningResponse.getHeaders());
     this.responseStream = ningResponse.getResponseBodyAsStream();
     this.mapper = mapper;
@@ -56,6 +58,11 @@ public class NingHttpResponse extends AbstractHttpResponse {
   @Override
   public int getStatusCode() {
     return statusCode;
+  }
+
+  @Override
+  public String getReasonPhrase() {
+    return reasonPhrase;
   }
 
   @Override

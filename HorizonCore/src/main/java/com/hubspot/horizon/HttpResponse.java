@@ -10,6 +10,7 @@ public interface HttpResponse {
   HttpRequest getRequest();
 
   int getStatusCode();
+  String getReasonPhrase();
   boolean isSuccess();
   boolean isError();
   boolean isClientError();

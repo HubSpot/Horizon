@@ -16,6 +16,7 @@ import java.util.List;
 public class ApacheHttpResponse extends AbstractHttpResponse {
   private final HttpRequest request;
   private final int statusCode;
+  private final String reasonPhrase;
   private final Headers headers;
   private final InputStream responseStream;
   private final ObjectMapper mapper;
@@ -23,6 +24,7 @@ public class ApacheHttpResponse extends AbstractHttpResponse {
   public ApacheHttpResponse(HttpRequest request, HttpResponse apacheResponse, ObjectMapper mapper) throws IOException {
     this.request = request;
     this.statusCode = apacheResponse.getStatusLine().getStatusCode();
+    this.reasonPhrase = apacheResponse.getStatusLine().getReasonPhrase();
     this.headers = convertHeaders(apacheResponse.getAllHeaders());
     this.responseStream = extractResponseStream(apacheResponse);
     this.mapper = mapper;
@@ -61,6 +63,11 @@ public class ApacheHttpResponse extends AbstractHttpResponse {
   @Override
   public int getStatusCode() {
     return statusCode;
+  }
+
+  @Override
+  public String getReasonPhrase() {
+    return reasonPhrase;
   }
 
   @Override
