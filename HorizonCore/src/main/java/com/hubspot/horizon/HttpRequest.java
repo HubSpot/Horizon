@@ -33,17 +33,7 @@ public class HttpRequest {
   }
 
   public enum Method {
-    GET(false), POST(true), PUT(true), DELETE(true), PATCH(true), HEAD(false);
-
-    private final boolean allowsBody;
-
-    private Method(boolean allowsBody) {
-      this.allowsBody = allowsBody;
-    }
-
-    public boolean allowsBody() {
-      return allowsBody;
-    }
+    GET, POST, PUT, DELETE, PATCH, HEAD
   }
 
   public enum ContentType {
@@ -298,17 +288,11 @@ public class HttpRequest {
     }
 
     private void validateBodyState() {
-      if (body == null && jsonBody == null && formParams.isEmpty()) {
-        return;
-      }
-
-      Preconditions.checkState(method.allowsBody(), "Cannot set body with method " + method);
-
       if (body != null) {
         Preconditions.checkState(jsonBody == null && formParams.isEmpty(), "Cannot set more than one body");
       } else if (jsonBody != null) {
         Preconditions.checkState(formParams.isEmpty(), "Cannot set more than one body");
-      } else {
+      } else if (!formParams.isEmpty()) {
         body = urlEncode(formParams).getBytes(UTF_8);
       }
     }

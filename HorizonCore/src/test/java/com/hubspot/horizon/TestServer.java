@@ -107,6 +107,7 @@ public class TestServer {
         response.addHeader("X-Request-Count", String.valueOf(incrementAndGetRequestCount(expectedResponse)));
         response.addHeader("Request-Content-Encoding", inputEncoding);
         response.addHeader("Response-Content-Encoding", expectedResponse.getHeader(HttpHeaders.CONTENT_ENCODING));
+        response.addHeader("X-Response-Body", expectedResponse.getBody());
         for (Entry<String, List<String>> entry : expectedResponse.getHeaders().entrySet()) {
           String name = entry.getKey();
 

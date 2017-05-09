@@ -154,6 +154,20 @@ public class NingAsyncHttpClientTest {
   }
 
   @Test
+  public void itSupportsGetWithBody() throws Exception {
+    httpClient = new NingAsyncHttpClient();
+
+    HttpRequest request = HttpRequest.newBuilder()
+        .setMethod(Method.GET)
+        .setUrl(testServer.baseHttpUrl())
+        .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
+        .build();
+    HttpResponse response = httpClient.execute(request).get();
+
+    assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0);
+  }
+
+  @Test
   public void itSupportsDeleteWithBody() throws Exception {
     httpClient = new NingAsyncHttpClient();
 
@@ -165,5 +179,19 @@ public class NingAsyncHttpClientTest {
     HttpResponse response = httpClient.execute(request).get();
 
     assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0);
+  }
+
+  @Test
+  public void itSupportsHeadWithBody() throws Exception {
+    httpClient = new NingAsyncHttpClient();
+
+    HttpRequest request = HttpRequest.newBuilder()
+        .setMethod(Method.HEAD)
+        .setUrl(testServer.baseHttpUrl())
+        .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
+        .build();
+    HttpResponse response = httpClient.execute(request).get();
+
+    assertThat(response).hasStatusCode(200).hasHeader("X-Response-Body", "test").hasRetries(0);
   }
 }
