@@ -8,8 +8,8 @@ public class AcceptEncodingRequestFilter implements RequestFilter {
 
   @Override
   public FilterContext filter(FilterContext context) {
-    if (!context.getRequest().getHeaders().containsKey(HttpHeaders.CONTENT_ENCODING)) {
-      context.getRequest().getHeaders().add(HttpHeaders.CONTENT_ENCODING, "snappy,gzip,deflate");
+    if (!context.getRequest().getHeaders().containsKey(HttpHeaders.ACCEPT_ENCODING)) {
+      context.getRequest().getHeaders().add(HttpHeaders.ACCEPT_ENCODING, "snappy,gzip,deflate");
     }
     return context;
   }

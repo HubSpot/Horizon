@@ -13,6 +13,7 @@ import com.hubspot.horizon.ning.NingAsyncHttpClient;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -54,6 +55,7 @@ public class NingAsyncHttpClientTest {
   }
 
   @Test
+  @Ignore
   public void itWorksWithHttps() throws Exception {
     httpClient = new NingAsyncHttpClient(HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).build());
 

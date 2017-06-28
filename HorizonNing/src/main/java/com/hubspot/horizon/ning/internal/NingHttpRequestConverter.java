@@ -15,7 +15,7 @@ public final class NingHttpRequestConverter {
 
   public Request convert(HttpRequest request) {
     RequestBuilder ningRequest = new RequestBuilder(request.getMethod().name());
-    ningRequest.setURI(request.getUrl());
+    ningRequest.setUrl(request.getUrl().toString());
 
     byte[] body = request.getBody(mapper);
     if (body != null) {
