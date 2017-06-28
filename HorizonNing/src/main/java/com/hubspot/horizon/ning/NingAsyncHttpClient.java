@@ -57,16 +57,16 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
     AsyncHttpClientConfig ningConfig = new AsyncHttpClientConfig.Builder()
             .addRequestFilter(new ThrottleRequestFilter(config.getMaxConnections()))
             .addRequestFilter(new AcceptEncodingRequestFilter())
-            .setMaximumConnectionsPerHost(config.getMaxConnectionsPerHost())
-            .setConnectionTimeoutInMs(config.getConnectTimeoutMillis())
-            .setRequestTimeoutInMs(config.getRequestTimeoutMillis())
-            .setMaximumNumberOfRedirects(config.getMaxRedirects())
-            .setFollowRedirects(config.isFollowRedirects())
+            .setMaxConnectionsPerHost(config.getMaxConnectionsPerHost())
+            .setConnectTimeout(config.getConnectTimeoutMillis())
+            .setRequestTimeout(config.getRequestTimeoutMillis())
+            .setReadTimeout(config.getRequestTimeoutMillis())
+            .setMaxRedirects(config.getMaxRedirects())
+            .setFollowRedirect(config.isFollowRedirects())
             .setHostnameVerifier(new NingHostnameVerifier(config.getSSLConfig()))
             .setSSLContext(NingSSLContext.forConfig(config.getSSLConfig()))
             .setAsyncHttpClientProviderConfig(newAsyncProviderConfig())
             .setUserAgent(config.getUserAgent())
-            .setCompressionEnabled(true)
             .setIOThreadMultiplier(1)
             .build();
 
@@ -112,7 +112,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
       public void run() {
         try {
           ningClient.executeRequest(ningRequest, completionHandler);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
           completionHandler.onThrowable(e);
         }
       }
@@ -125,7 +125,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
 
   private static AsyncHttpProviderConfig<?, ?> newAsyncProviderConfig() {
     NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
-    nettyConfig.addProperty(NettyAsyncHttpProviderConfig.SOCKET_CHANNEL_FACTORY, newSocketChannelFactory());
+    nettyConfig.setSocketChannelFactory(newSocketChannelFactory());
     nettyConfig.setNettyTimer(newTimer());
     return nettyConfig;
   }
