@@ -1,5 +1,18 @@
 package com.hubspot.horizong.ning;
 
+import static com.hubspot.horizon.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import com.hubspot.horizon.AsyncHttpClient;
 import com.hubspot.horizon.Compression;
 import com.hubspot.horizon.ExpectedHttpResponse;
@@ -10,15 +23,6 @@ import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.SSLConfig;
 import com.hubspot.horizon.TestServer;
 import com.hubspot.horizon.ning.NingAsyncHttpClient;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.io.IOException;
-
-import static com.hubspot.horizon.Assertions.assertThat;
 
 public class NingAsyncHttpClientTest {
   private static final TestServer testServer = new TestServer();
@@ -167,5 +171,20 @@ public class NingAsyncHttpClientTest {
     HttpResponse response = httpClient.execute(request).get();
 
     assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0);
+  }
+
+  @Test
+  public void itDoesntLeakThreads() throws Exception {
+    httpClient = new NingAsyncHttpClient();
+
+    ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+
+    int initialThreadCount = threadMXBean.getThreadCount();
+    for (int i = 0; i < 100; i++) {
+      new NingAsyncHttpClient().close();
+    }
+    int finalThreadCount = threadMXBean.getThreadCount();
+
+    assertThat(finalThreadCount - initialThreadCount).isLessThan(10);
   }
 }
