@@ -1,5 +1,30 @@
 package com.hubspot.horizon.apache;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.annotation.Nullable;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.config.SocketConfig;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.hubspot.horizon.HttpClient;
@@ -18,29 +43,6 @@ import com.hubspot.horizon.apache.internal.DefaultHeadersRequestInterceptor;
 import com.hubspot.horizon.apache.internal.KeepAliveWithDefaultStrategy;
 import com.hubspot.horizon.apache.internal.LenientRedirectStrategy;
 import com.hubspot.horizon.apache.internal.SnappyContentEncodingResponseInterceptor;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.config.SocketConfig;
-import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ApacheHttpClient implements HttpClient {
   private static final Logger LOG = LoggerFactory.getLogger(ApacheHttpClient.class);
@@ -98,7 +100,7 @@ public class ApacheHttpClient implements HttpClient {
     return RequestConfig.custom()
             .setConnectionRequestTimeout(config.getConnectTimeoutMillis())
             .setConnectTimeout(config.getConnectTimeoutMillis())
-            .setSocketTimeout(config.getRequestTimeoutMillis())
+            .setSocketTimeout(config.getReadTimeoutMillis())
             .setRedirectsEnabled(config.isFollowRedirects())
             .setMaxRedirects(config.getMaxRedirects())
             .setRelativeRedirectsAllowed(config.isRejectRelativeRedirects())
@@ -106,7 +108,7 @@ public class ApacheHttpClient implements HttpClient {
   }
 
   private SocketConfig createSocketConfig(HttpConfig config) {
-    return SocketConfig.custom().setSoTimeout(config.getRequestTimeoutMillis()).build();
+    return SocketConfig.custom().setSoTimeout(config.getReadTimeoutMillis()).build();
   }
 
   @Override
