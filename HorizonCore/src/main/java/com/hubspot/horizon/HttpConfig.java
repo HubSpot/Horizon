@@ -1,16 +1,17 @@
 package com.hubspot.horizon;
 
+import java.util.concurrent.TimeUnit;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
 import com.hubspot.horizon.HttpRequest.Options;
 
-import java.util.concurrent.TimeUnit;
-
 public class HttpConfig {
   private final int maxConnections;
   private final int maxConnectionsPerHost;
   private final int connectTimeoutSeconds;
+  private final int readTimeoutSeconds;
   private final int requestTimeoutSeconds;
   private final int defaultKeepAliveSeconds;
   private final int maxRedirects;
@@ -28,6 +29,7 @@ public class HttpConfig {
                      int maxConnectionsPerHost,
                      int connectTimeoutSeconds,
                      int requestTimeoutSeconds,
+                     int readTimeoutSeconds,
                      int defaultKeepAliveSeconds,
                      int maxRedirects,
                      String userAgent,
@@ -43,6 +45,7 @@ public class HttpConfig {
     this.maxConnectionsPerHost = maxConnectionsPerHost;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
     this.requestTimeoutSeconds = requestTimeoutSeconds;
+    this.readTimeoutSeconds = readTimeoutSeconds;
     this.defaultKeepAliveSeconds = defaultKeepAliveSeconds;
     this.maxRedirects = maxRedirects;
     this.userAgent = userAgent;
@@ -74,6 +77,10 @@ public class HttpConfig {
 
   public int getRequestTimeoutMillis() {
     return Ints.checkedCast(TimeUnit.SECONDS.toMillis(requestTimeoutSeconds));
+  }
+
+  public int getReadTimeoutMillis() {
+    return Ints.checkedCast(TimeUnit.SECONDS.toMillis(readTimeoutSeconds));
   }
 
   public int getDefaultKeepAliveMillis() {
@@ -120,6 +127,7 @@ public class HttpConfig {
     private int maxConnectionsPerHost = 25;
     private int connectTimeoutSeconds = 1;
     private int requestTimeoutSeconds = 30;
+    private int readTimeoutSeconds = 30;
     private int defaultKeepAliveSeconds = 10;
     private int maxRedirects = 10;
     private String userAgent = "Horizon/0.0.1";
@@ -151,6 +159,11 @@ public class HttpConfig {
 
     public Builder setRequestTimeoutSeconds(int requestTimeoutSeconds) {
       this.requestTimeoutSeconds = requestTimeoutSeconds;
+      return this;
+    }
+
+    public Builder setReadTimeoutSeconds(int readTimeoutSeconds) {
+      this.readTimeoutSeconds = readTimeoutSeconds;
       return this;
     }
 
@@ -214,6 +227,7 @@ public class HttpConfig {
               maxConnectionsPerHost,
               connectTimeoutSeconds,
               requestTimeoutSeconds,
+              readTimeoutSeconds,
               defaultKeepAliveSeconds,
               maxRedirects,
               userAgent,
