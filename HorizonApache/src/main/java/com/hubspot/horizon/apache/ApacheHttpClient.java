@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -63,6 +64,7 @@ public class ApacheHttpClient implements HttpClient {
     builder.setConnectionManager(createConnectionManager(config));
     builder.setRedirectStrategy(new LenientRedirectStrategy());
     builder.setKeepAliveStrategy(new KeepAliveWithDefaultStrategy(config.getDefaultKeepAliveMillis()));
+    builder.setConnectionTimeToLive(config.getConnectionTtlMillis(), TimeUnit.MILLISECONDS);
     builder.addInterceptorFirst(new DefaultHeadersRequestInterceptor(config));
     builder.addInterceptorFirst(new SnappyContentEncodingResponseInterceptor());
     builder.setDefaultRequestConfig(createRequestConfig(config));

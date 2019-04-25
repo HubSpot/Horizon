@@ -13,6 +13,7 @@ public class HttpConfig {
   private final int connectTimeoutSeconds;
   private final int requestTimeoutSeconds;
   private final int defaultKeepAliveSeconds;
+  private final int connectionTtl;
   private final int maxRedirects;
   private final String userAgent;
   private final boolean followRedirects;
@@ -29,6 +30,7 @@ public class HttpConfig {
                      int connectTimeoutSeconds,
                      int requestTimeoutSeconds,
                      int defaultKeepAliveSeconds,
+                     int connectionTtl,
                      int maxRedirects,
                      String userAgent,
                      boolean followRedirects,
@@ -44,6 +46,7 @@ public class HttpConfig {
     this.connectTimeoutSeconds = connectTimeoutSeconds;
     this.requestTimeoutSeconds = requestTimeoutSeconds;
     this.defaultKeepAliveSeconds = defaultKeepAliveSeconds;
+    this.connectionTtl = connectionTtl;
     this.maxRedirects = maxRedirects;
     this.userAgent = userAgent;
     this.followRedirects = followRedirects;
@@ -78,6 +81,10 @@ public class HttpConfig {
 
   public int getDefaultKeepAliveMillis() {
     return Ints.checkedCast(TimeUnit.SECONDS.toMillis(defaultKeepAliveSeconds));
+  }
+
+  public int getConnectionTtlMillis() {
+    return Ints.checkedCast(TimeUnit.SECONDS.toMillis(connectionTtl));
   }
 
   public int getMaxRedirects() {
@@ -121,6 +128,7 @@ public class HttpConfig {
     private int connectTimeoutSeconds = 1;
     private int requestTimeoutSeconds = 30;
     private int defaultKeepAliveSeconds = 10;
+    private int connectionTtl = -1;
     private int maxRedirects = 10;
     private String userAgent = "Horizon/0.0.1";
     private boolean followRedirects = true;
@@ -156,6 +164,11 @@ public class HttpConfig {
 
     public Builder setDefaultKeepAliveSeconds(int defaultKeepAliveSeconds) {
       this.defaultKeepAliveSeconds = defaultKeepAliveSeconds;
+      return this;
+    }
+
+    public Builder setConnectionTtl(int connectionTtl) {
+      this.connectionTtl = connectionTtl;
       return this;
     }
 
@@ -215,6 +228,7 @@ public class HttpConfig {
               connectTimeoutSeconds,
               requestTimeoutSeconds,
               defaultKeepAliveSeconds,
+              connectionTtl,
               maxRedirects,
               userAgent,
               followRedirects,
