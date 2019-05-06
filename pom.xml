@@ -10,7 +10,7 @@
 
   <artifactId>Horizon</artifactId>
   <packaging>pom</packaging>
-  <version>0.1.2-SNAPSHOT</version>
+  <version>0.1.3-SNAPSHOT</version>
   <description>Simple interfaces for making HTTP requests</description>
   <url>https://github.com/HubSpot/Horizon</url>
 
