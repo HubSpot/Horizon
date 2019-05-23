@@ -1,14 +1,15 @@
 package com.hubspot.horizon.ning.internal;
 
+import java.io.IOException;
+
+import org.asynchttpclient.AsyncCompletionHandler;
+import org.asynchttpclient.Response;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.net.HttpHeaders;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.internal.AbstractHttpResponse;
-import com.ning.http.client.AsyncCompletionHandler;
-import com.ning.http.client.Response;
-
-import java.io.IOException;
 
 public class NingCompletionHandler extends AsyncCompletionHandler<HttpResponse> {
   private final HttpRequest request;

@@ -1,34 +1,45 @@
 package com.hubspot.horizon;
 
-import com.google.common.base.Throwables;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 
 import javax.annotation.Nullable;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-import java.io.InputStream;
-import java.security.KeyStore;
 
 public class SSLConfig {
-  private final KeyManager[] keyManagers;
-  private final TrustManager[] trustManagers;
+  private final KeyManagerFactory keyManagerFactory;
+  private final TrustManagerFactory trustManagerFactory;
   private final boolean acceptAllSSL;
 
-  private SSLConfig(@Nullable KeyManager[] keyManagers, @Nullable TrustManager[] trustManagers, boolean acceptAllSSL) {
-    this.keyManagers = keyManagers;
-    this.trustManagers = trustManagers;
+  private SSLConfig(@Nullable KeyManagerFactory keyManagerFactory, @Nullable TrustManagerFactory trustManagerFactory, boolean acceptAllSSL) {
+    this.keyManagerFactory = keyManagerFactory;
+    this.trustManagerFactory = trustManagerFactory;
     this.acceptAllSSL = acceptAllSSL;
   }
 
   @Nullable
+  public KeyManagerFactory getKeyManagerFactory() {
+    return keyManagerFactory;
+  }
+
+  @Nullable
   public KeyManager[] getKeyManagers() {
-    return keyManagers == null ? null : keyManagers.clone();
+    return keyManagerFactory == null ? null : keyManagerFactory.getKeyManagers();
+  }
+
+  @Nullable
+  public TrustManagerFactory getTrustManagerFactory() {
+    return trustManagerFactory;
   }
 
   @Nullable
   public TrustManager[] getTrustManagers() {
-    return trustManagers == null ? null : trustManagers.clone();
+    return trustManagerFactory == null ? null : trustManagerFactory.getTrustManagers();
   }
 
   public boolean isAcceptAllSSL() {
@@ -50,23 +61,17 @@ public class SSLConfig {
 
       KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
       keyManagerFactory.init(keyStore, password.toCharArray());
-      KeyManager[] keyManagers = keyManagerFactory.getKeyManagers();
 
       TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
       trustManagerFactory.init(keyStore);
-      TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
 
-      return custom(keyManagers, trustManagers);
-    } catch (Exception e) {
-      throw Throwables.propagate(e);
+      return custom(keyManagerFactory, trustManagerFactory);
+    } catch (GeneralSecurityException | IOException e) {
+      throw new RuntimeException("Error initializing custom keystore", e);
     }
   }
 
-  public static SSLConfig custom(@Nullable KeyManager keyManager, @Nullable TrustManager trustManager) {
-    return custom(new KeyManager[]{ keyManager }, new TrustManager[]{ trustManager });
-  }
-
-  public static SSLConfig custom(@Nullable KeyManager[] keyManagers, @Nullable TrustManager[] trustManagers) {
-    return new SSLConfig(keyManagers, trustManagers, false);
+  public static SSLConfig custom(KeyManagerFactory keyManagerFactory, TrustManagerFactory trustManagerFactory) {
+    return new SSLConfig(keyManagerFactory, trustManagerFactory, false);
   }
 }

@@ -1,10 +1,11 @@
 package com.hubspot.horizon.ning.internal;
 
+import org.asynchttpclient.Request;
+import org.asynchttpclient.RequestBuilder;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubspot.horizon.Header;
 import com.hubspot.horizon.HttpRequest;
-import com.ning.http.client.Request;
-import com.ning.http.client.RequestBuilder;
 
 public final class NingHttpRequestConverter {
   private final ObjectMapper mapper;

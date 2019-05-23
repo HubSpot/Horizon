@@ -1,18 +1,20 @@
 package com.hubspot.horizon.ning.internal;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
+
+import org.asynchttpclient.Response;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubspot.horizon.Header;
 import com.hubspot.horizon.Headers;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.internal.AbstractHttpResponse;
-import com.ning.http.client.Response;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import io.netty.handler.codec.http.HttpHeaders;
 
 public class NingHttpResponse extends AbstractHttpResponse {
   private final HttpRequest request;
@@ -29,15 +31,11 @@ public class NingHttpResponse extends AbstractHttpResponse {
     this.mapper = mapper;
   }
 
-  private Headers convertHeaders(Map<String, List<String>> ningHeaders) {
+  private Headers convertHeaders(HttpHeaders ningHeaders) {
     List<Header> headers = new ArrayList<Header>();
 
-    for (Entry<String, List<String>> ningHeader : ningHeaders.entrySet()) {
-      String name = ningHeader.getKey();
-
-      for (String value : ningHeader.getValue()) {
-        headers.add(new Header(name, value));
-      }
+    for (Entry<String, String> ningHeader : ningHeaders) {
+      headers.add(new Header(ningHeader.getKey(), ningHeader.getValue()));
     }
 
     return new Headers(headers);

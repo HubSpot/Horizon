@@ -1,13 +1,13 @@
 package com.hubspot.horizon.ning.internal;
 
+import javax.net.ssl.SSLException;
+
 import com.hubspot.horizon.SSLConfig;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import java.security.GeneralSecurityException;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.SslProvider;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 public final class NingSSLContext {
 
@@ -15,47 +15,20 @@ public final class NingSSLContext {
     throw new AssertionError();
   }
 
-  public static SSLContext forConfig(SSLConfig config) {
-    if (config.isAcceptAllSSL()) {
-      return acceptAllSSLContext();
-    } else {
-      try {
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(config.getKeyManagers(), config.getTrustManagers(), null);
-
-        return sslContext;
-      } catch (GeneralSecurityException e) {
-        throw new RuntimeException(e);
-      }
-    }
-  }
-
-  private static SSLContext acceptAllSSLContext() {
+  public static SslContext forConfig(SSLConfig config) {
     try {
-      SSLContext sslcontext = SSLContext.getInstance("SSL");
-      sslcontext.init(null, new TrustManager[]{ new AcceptAllTrustManager() }, new SecureRandom());
+      SslContextBuilder builder = SslContextBuilder.forClient().sslProvider(SslProvider.JDK);
 
-      return sslcontext;
-    } catch (GeneralSecurityException e) {
+      if (config.isAcceptAllSSL()) {
+        builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
+      } else {
+        builder.keyManager(config.getKeyManagerFactory());
+        builder.trustManager(config.getTrustManagerFactory());
+      }
+
+      return builder.build();
+    } catch (SSLException e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  private static class AcceptAllTrustManager implements X509TrustManager {
-
-    @Override
-    public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {
-      // do nothing
-    }
-
-    @Override
-    public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {
-      // do nothing
-    }
-
-    @Override
-    public X509Certificate[] getAcceptedIssuers() {
-      return new X509Certificate[0];
     }
   }
 }
