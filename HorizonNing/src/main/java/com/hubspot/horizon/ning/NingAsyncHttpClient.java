@@ -1,28 +1,18 @@
 package com.hubspot.horizon.ning;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.netty.channel.socket.nio.BossPool;
-import org.jboss.netty.channel.socket.nio.NioClientBoss;
-import org.jboss.netty.channel.socket.nio.NioClientBossPool;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.jboss.netty.channel.socket.nio.NioWorker;
-import org.jboss.netty.channel.socket.nio.NioWorkerPool;
-import org.jboss.netty.channel.socket.nio.WorkerPool;
-import org.jboss.netty.util.HashedWheelTimer;
-import org.jboss.netty.util.ThreadNameDeterminer;
-import org.jboss.netty.util.ThreadRenamingRunnable;
+import org.asynchttpclient.AsyncHttpClientConfig;
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
+import org.asynchttpclient.Request;
+import org.asynchttpclient.filter.ThrottleRequestFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.hubspot.horizon.AsyncHttpClient;
 import com.hubspot.horizon.HttpConfig;
 import com.hubspot.horizon.HttpRequest;
@@ -32,29 +22,23 @@ import com.hubspot.horizon.ning.internal.AcceptEncodingRequestFilter;
 import com.hubspot.horizon.ning.internal.EmptyCallback;
 import com.hubspot.horizon.ning.internal.NingCompletionHandler;
 import com.hubspot.horizon.ning.internal.NingFuture;
-import com.hubspot.horizon.ning.internal.NingHostnameVerifier;
 import com.hubspot.horizon.ning.internal.NingHttpRequestConverter;
 import com.hubspot.horizon.ning.internal.NingRetryHandler;
 import com.hubspot.horizon.ning.internal.NingSSLContext;
-import com.ning.http.client.AsyncHttpClientConfig;
-import com.ning.http.client.Request;
-import com.ning.http.client.extra.ThrottleRequestFilter;
-import com.ning.http.client.providers.netty.NettyAsyncHttpProviderConfig;
+
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.util.HashedWheelTimer;
+import io.netty.util.concurrent.DefaultThreadFactory;
 
 public class NingAsyncHttpClient implements AsyncHttpClient {
-  private static final ExecutorService BOSS_EXECUTOR = newExecutor("NioBoss");
-  private static final HashedWheelTimer TIMER = new HashedWheelTimer(newThreadFactory("NioTimer"));
+  private static final HashedWheelTimer TIMER = new HashedWheelTimer(newThreadFactory("NingAsyncHttpClient-Timer"));
 
-  static {
-    ThreadRenamingRunnable.setThreadNameDeterminer(ThreadNameDeterminer.CURRENT);
-  }
-
-  private final com.ning.http.client.AsyncHttpClient ningClient;
+  private final org.asynchttpclient.AsyncHttpClient ningClient;
   private final NingHttpRequestConverter requestConverter;
   private final Options defaultOptions;
   private final ObjectMapper mapper;
-  private final NioClientSocketChannelFactory channelFactory;
-  private final ExecutorService workerExecutorService;
+  private final EventLoopGroup eventLoopGroup;
 
   public NingAsyncHttpClient() {
     this(HttpConfig.newBuilder().build());
@@ -63,31 +47,26 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
   public NingAsyncHttpClient(HttpConfig config) {
     Preconditions.checkNotNull(config);
 
-    NettyAsyncHttpProviderConfig nettyConfig = new NettyAsyncHttpProviderConfig();
-    int workerThreads = Math.min(Runtime.getRuntime().availableProcessors(), 4);
-    this.workerExecutorService = newWorkerThreadPool(workerThreads);
-    this.channelFactory = newSocketChannelFactory(this.workerExecutorService, workerThreads);
-    nettyConfig.setSocketChannelFactory(this.channelFactory);
-    nettyConfig.setNettyTimer(TIMER);
+    this.eventLoopGroup = newEventLoopGroup();
 
-    AsyncHttpClientConfig ningConfig = new AsyncHttpClientConfig.Builder()
+    AsyncHttpClientConfig ningConfig = new DefaultAsyncHttpClientConfig.Builder()
             .addRequestFilter(new ThrottleRequestFilter(config.getMaxConnections()))
             .addRequestFilter(new AcceptEncodingRequestFilter())
             .setMaxConnectionsPerHost(config.getMaxConnectionsPerHost())
-            .setConnectionTTL(config.getConnectionTtlMillis())
+            .setConnectionTtl(config.getConnectionTtlMillis())
             .setConnectTimeout(config.getConnectTimeoutMillis())
             .setRequestTimeout(config.getRequestTimeoutMillis())
             .setReadTimeout(config.getRequestTimeoutMillis())
             .setMaxRedirects(config.getMaxRedirects())
             .setFollowRedirect(config.isFollowRedirects())
-            .setHostnameVerifier(new NingHostnameVerifier(config.getSSLConfig()))
-            .setSSLContext(NingSSLContext.forConfig(config.getSSLConfig()))
-            .setAsyncHttpClientProviderConfig(nettyConfig)
+            .setSslContext(NingSSLContext.forConfig(config.getSSLConfig()))
             .setUserAgent(config.getUserAgent())
-            .setIOThreadMultiplier(1)
+            .setEventLoopGroup(eventLoopGroup)
+            .setNettyTimer(TIMER)
+            .setMaxRequestRetry(0) // we handle retries ourselves
             .build();
 
-    this.ningClient = new com.ning.http.client.AsyncHttpClient(ningConfig);
+    this.ningClient = new DefaultAsyncHttpClient(ningConfig);
     this.requestConverter = new NingHttpRequestConverter(config.getObjectMapper());
     this.defaultOptions = config.getOptions();
     this.mapper = config.getObjectMapper();
@@ -123,15 +102,11 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
 
     final NingCompletionHandler completionHandler = new NingCompletionHandler(request, future, retryHandler, mapper);
     final Request ningRequest = requestConverter.convert(request);
-    Runnable runnable = new Runnable() {
-
-      @Override
-      public void run() {
-        try {
-          ningClient.executeRequest(ningRequest, completionHandler);
-        } catch (RuntimeException e) {
-          completionHandler.onThrowable(e);
-        }
+    Runnable runnable = () -> {
+      try {
+        ningClient.executeRequest(ningRequest, completionHandler);
+      } catch (RuntimeException e) {
+        completionHandler.onThrowable(e);
       }
     };
     retryHandler.setRetryRunnable(runnable);
@@ -140,36 +115,15 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
     return future;
   }
 
-  private static ExecutorService newWorkerThreadPool(int threads) {
-    ThreadPoolExecutor workerPool = new ThreadPoolExecutor(
-            threads,
-            threads,
-            60L,
-            TimeUnit.SECONDS,
-            new SynchronousQueue<Runnable>(),
-            newThreadFactory("NioWorker")
-    );
+  private EventLoopGroup newEventLoopGroup() {
+    ThreadFactory threadFactory = newThreadFactory("NingAsyncHttpClient");
+    int workerThreads = Math.min(Runtime.getRuntime().availableProcessors(), 4);
 
-    workerPool.allowCoreThreadTimeOut(true);
-    return workerPool;
+    return new NioEventLoopGroup(workerThreads, threadFactory);
   }
 
-  private static NioClientSocketChannelFactory newSocketChannelFactory(
-          ExecutorService workerThreadPool,
-          int workerThreads
-  ) {
-    BossPool<NioClientBoss> bossPool = new NioClientBossPool(BOSS_EXECUTOR, 1, TIMER, null);
-    WorkerPool<NioWorker> workerPool = new NioWorkerPool(workerThreadPool, workerThreads);
-    return new NioClientSocketChannelFactory(bossPool, workerPool);
-  }
-
-  private static ExecutorService newExecutor(String qualifier) {
-    return Executors.newCachedThreadPool(newThreadFactory(qualifier));
-  }
-
-  private static ThreadFactory newThreadFactory(String qualifier) {
-    String nameFormat = "NingAsyncHttpClient-" + qualifier + "-%d";
-    return new ThreadFactoryBuilder().setNameFormat(nameFormat).setDaemon(true).build();
+  private static ThreadFactory newThreadFactory(String name) {
+    return new DefaultThreadFactory(name, true);
   }
 
   @Override
@@ -177,13 +131,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
     try {
       ningClient.close();
     } finally {
-      // Do NOT call releaseExternalResources() here
-      // since we maintain our own executors.
-      try {
-        channelFactory.shutdown();
-      } finally {
-        workerExecutorService.shutdown();
-      }
+      eventLoopGroup.shutdownGracefully(0, 5, TimeUnit.SECONDS);
     }
   }
 }

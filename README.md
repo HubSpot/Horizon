@@ -11,7 +11,7 @@ Java HTTP client interfaces designed to make interacting with REST services as u
 
 ## Usage
 
-The HorizonCore module contains all of the interfaces and domain objects. Horizon comes with two implementations, packaged in separate artifacts. The HorizonApache module contains an implementation of the synchronous `HttpClient` interface, built on top of Apache's httpclient 4. The HorizonNing module contains an implementation of both `HttpClient` and `AsyncHttpClient` built on top of com.ning:AsyncHttpClient. So if you just want to use the Apache-based client, you would add the following Maven dependency:
+The HorizonCore module contains all of the interfaces and domain objects. Horizon comes with two implementations, packaged in separate artifacts. The HorizonApache module contains an implementation of the synchronous `HttpClient` interface, built on top of Apache's httpclient 4. The HorizonNing module contains an implementation of both `HttpClient` and `AsyncHttpClient` built on top of org.asynchttpclient:async-http-client. So if you just want to use the Apache-based client, you would add the following Maven dependency:
 
 ```xml
 <dependency>
