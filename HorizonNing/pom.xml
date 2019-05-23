@@ -76,21 +76,27 @@
                         <createDependencyReducedPom>true</createDependencyReducedPom>
                         <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
                         <dependencyReducedPomLocation>${pom.path}</dependencyReducedPomLocation>
-                        <!-- TODO -->
+                        <useBaseVersion>true</useBaseVersion>
                         <artifactSet>
                             <includes>
-                                <include>com.ning:async-http-client</include>
-                                <include>io.netty:netty</include>
+                                <include>io.netty:*</include>
                             </includes>
                         </artifactSet>
+                        <filters>
+                            <filter>
+                                <artifact>*:*</artifact>
+                                <excludes>
+                                    <exclude>META-INF/*.SF</exclude>
+                                    <exclude>META-INF/*.DSA</exclude>
+                                    <exclude>META-INF/*.RSA</exclude>
+                                    <exclude>META-INF/native/libnetty_transport_native_epoll_x86_64.so</exclude>
+                                </excludes>
+                            </filter>
+                        </filters>
                         <relocations>
                             <relocation>
-                                <pattern>com.ning.http</pattern>
-                                <shadedPattern>com.hubspot.horizon.shaded.com.ning.http</shadedPattern>
-                            </relocation>
-                            <relocation>
-                                <pattern>org.jboss.netty</pattern>
-                                <shadedPattern>com.hubspot.horizon.shaded.org.jboss.netty</shadedPattern>
+                                <pattern>io.netty.</pattern>
+                                <shadedPattern>com.hubspot.horizon.shaded.io.netty.</shadedPattern>
                             </relocation>
                         </relocations>
                     </configuration>
