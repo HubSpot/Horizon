@@ -20,8 +20,9 @@
   </modules>
 
   <properties>
-    <dep.netty.version>4.1.33.Final</dep.netty.version>
-    <dep.slf4j.version>1.7.25</dep.slf4j.version>
+    <dep.netty.version>4.1.42.Final</dep.netty.version>
+    <dep.netty3.version>3.10.6.Final</dep.netty3.version>
+    <dep.slf4j.version>1.7.26</dep.slf4j.version>
   </properties>
 
   <dependencyManagement>
@@ -29,7 +30,7 @@
       <dependency>
         <groupId>com.ning</groupId>
         <artifactId>async-http-client</artifactId>
-        <version>1.9.38</version>
+        <version>1.9.40</version>
       </dependency>
       <dependency>
         <groupId>com.hubspot</groupId>
