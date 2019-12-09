@@ -27,6 +27,11 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>com.ning</groupId>
+        <artifactId>async-http-client</artifactId>
+        <version>1.9.38</version>
+      </dependency>
+      <dependency>
         <groupId>com.hubspot</groupId>
         <artifactId>HorizonCore</artifactId>
         <version>${project.version}</version>
