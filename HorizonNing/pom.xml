@@ -89,7 +89,6 @@
                                     <exclude>META-INF/*.SF</exclude>
                                     <exclude>META-INF/*.DSA</exclude>
                                     <exclude>META-INF/*.RSA</exclude>
-                                    <exclude>META-INF/native/libnetty_transport_native_epoll_x86_64.so</exclude>
                                 </excludes>
                             </filter>
                         </filters>
@@ -97,6 +96,11 @@
                             <relocation>
                                 <pattern>io.netty.</pattern>
                                 <shadedPattern>com.hubspot.horizon.shaded.io.netty.</shadedPattern>
+                            </relocation>
+                            <relocation>
+                                <pattern>META-INF/native/libnetty_transport_native_epoll_x86_64.so</pattern>
+                                <shadedPattern>META-INF/native/libcom_hubspot_horizon_shaded_netty_transport_native_epoll_x86_64.so</shadedPattern>
+                                <rawString>true</rawString>
                             </relocation>
                         </relocations>
                     </configuration>
