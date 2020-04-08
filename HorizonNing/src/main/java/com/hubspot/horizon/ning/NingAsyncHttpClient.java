@@ -4,11 +4,15 @@ import java.io.IOException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import org.asynchttpclient.AsyncHttpClientConfig;
-import org.asynchttpclient.DefaultAsyncHttpClient;
-import org.asynchttpclient.DefaultAsyncHttpClientConfig;
-import org.asynchttpclient.Request;
-import org.asynchttpclient.filter.ThrottleRequestFilter;
+import org.asynchttpclient.shaded.AsyncHttpClientConfig;
+import org.asynchttpclient.shaded.DefaultAsyncHttpClient;
+import org.asynchttpclient.shaded.DefaultAsyncHttpClientConfig;
+import org.asynchttpclient.shaded.Request;
+import org.asynchttpclient.shaded.filter.ThrottleRequestFilter;
+import org.asynchttpclient.shaded.io.netty.channel.EventLoopGroup;
+import org.asynchttpclient.shaded.io.netty.channel.nio.NioEventLoopGroup;
+import org.asynchttpclient.shaded.io.netty.util.HashedWheelTimer;
+import org.asynchttpclient.shaded.io.netty.util.concurrent.DefaultThreadFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
@@ -26,15 +30,10 @@ import com.hubspot.horizon.ning.internal.NingHttpRequestConverter;
 import com.hubspot.horizon.ning.internal.NingRetryHandler;
 import com.hubspot.horizon.ning.internal.NingSSLContext;
 
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.util.HashedWheelTimer;
-import io.netty.util.concurrent.DefaultThreadFactory;
-
 public class NingAsyncHttpClient implements AsyncHttpClient {
   private static final HashedWheelTimer TIMER = new HashedWheelTimer(newThreadFactory("NingAsyncHttpClient-Timer"));
 
-  private final org.asynchttpclient.AsyncHttpClient ningClient;
+  private final org.asynchttpclient.shaded.AsyncHttpClient ningClient;
   private final NingHttpRequestConverter requestConverter;
   private final Options defaultOptions;
   private final ObjectMapper mapper;

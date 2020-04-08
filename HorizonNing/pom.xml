@@ -10,34 +10,14 @@
 
     <artifactId>HorizonNing</artifactId>
 
-    <properties>
-        <pom.path>${project.build.directory}/${project.artifactId}-${project.version}.pom</pom.path>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.hubspot</groupId>
             <artifactId>HorizonCore</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.asynchttpclient</groupId>
-            <artifactId>async-http-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-codec-http</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-handler</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-transport</artifactId>
+            <groupId>com.hubspot</groupId>
+            <artifactId>async-http-client-shaded</artifactId>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -62,69 +42,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-shade-plugin</artifactId>
-                    <configuration combine.self="override">
-                        <shadeTestJar>true</shadeTestJar>
-                        <shadeSourcesContent>true</shadeSourcesContent>
-                        <shadedArtifactAttached>false</shadedArtifactAttached>
-                        <createDependencyReducedPom>true</createDependencyReducedPom>
-                        <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
-                        <dependencyReducedPomLocation>${pom.path}</dependencyReducedPomLocation>
-                        <useBaseVersion>true</useBaseVersion>
-                        <artifactSet>
-                            <includes>
-                                <include>io.netty:*</include>
-                            </includes>
-                        </artifactSet>
-                        <filters>
-                            <filter>
-                                <artifact>*:*</artifact>
-                                <excludes>
-                                    <exclude>META-INF/*.SF</exclude>
-                                    <exclude>META-INF/*.DSA</exclude>
-                                    <exclude>META-INF/*.RSA</exclude>
-                                </excludes>
-                            </filter>
-                        </filters>
-                        <relocations>
-                            <relocation>
-                                <pattern>io.netty.</pattern>
-                                <shadedPattern>com.hubspot.horizon.shaded.io.netty.</shadedPattern>
-                            </relocation>
-                            <relocation>
-                                <pattern>META-INF/native/libnetty_transport_native_epoll_x86_64.so</pattern>
-                                <shadedPattern>META-INF/native/libcom_hubspot_horizon_shaded_netty_transport_native_epoll_x86_64.so</shadedPattern>
-                                <rawString>true</rawString>
-                            </relocation>
-                            <relocation>
-                                <pattern>META-INF/native/libcom_hubspot_horizon_shaded_netty_transport_native_kqueue_x86_64.jnilib</pattern>
-                                <shadedPattern>META-INF/native/libcom_hubspot_horizon_shaded_netty_transport_native_epoll_x86_64.so</shadedPattern>
-                                <rawString>true</rawString>
-                            </relocation>
-                        </relocations>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <phase>package</phase>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>

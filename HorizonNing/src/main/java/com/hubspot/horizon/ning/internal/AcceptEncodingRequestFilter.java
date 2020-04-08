@@ -1,7 +1,7 @@
 package com.hubspot.horizon.ning.internal;
 
-import org.asynchttpclient.filter.FilterContext;
-import org.asynchttpclient.filter.RequestFilter;
+import org.asynchttpclient.shaded.filter.FilterContext;
+import org.asynchttpclient.shaded.filter.RequestFilter;
 
 import com.google.common.net.HttpHeaders;
 

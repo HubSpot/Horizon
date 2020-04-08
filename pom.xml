@@ -20,7 +20,6 @@
   </modules>
 
   <properties>
-    <dep.netty.version>4.1.48.Final</dep.netty.version>
     <dep.slf4j.version>1.7.30</dep.slf4j.version>
   </properties>
 
@@ -48,9 +47,9 @@
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.asynchttpclient</groupId>
-        <artifactId>async-http-client</artifactId>
-        <version>2.12.1</version>
+        <groupId>com.hubspot</groupId>
+        <artifactId>async-http-client-shaded</artifactId>
+        <version>2.12.1.0</version>
       </dependency>
       <dependency>
         <groupId>org.xerial.snappy</groupId>

@@ -2,8 +2,8 @@ package com.hubspot.horizon.ning.internal;
 
 import java.io.IOException;
 
-import org.asynchttpclient.AsyncCompletionHandler;
-import org.asynchttpclient.Response;
+import org.asynchttpclient.shaded.AsyncCompletionHandler;
+import org.asynchttpclient.shaded.Response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.net.HttpHeaders;
