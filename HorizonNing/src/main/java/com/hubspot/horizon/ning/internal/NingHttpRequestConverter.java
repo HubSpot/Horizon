@@ -1,7 +1,7 @@
 package com.hubspot.horizon.ning.internal;
 
-import org.asynchttpclient.Request;
-import org.asynchttpclient.RequestBuilder;
+import org.asynchttpclient.shaded.Request;
+import org.asynchttpclient.shaded.RequestBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubspot.horizon.Header;

@@ -6,15 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.asynchttpclient.Response;
+import org.asynchttpclient.shaded.Response;
+import org.asynchttpclient.shaded.io.netty.handler.codec.http.HttpHeaders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubspot.horizon.Header;
 import com.hubspot.horizon.Headers;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.internal.AbstractHttpResponse;
-
-import io.netty.handler.codec.http.HttpHeaders;
 
 public class NingHttpResponse extends AbstractHttpResponse {
   private final HttpRequest request;

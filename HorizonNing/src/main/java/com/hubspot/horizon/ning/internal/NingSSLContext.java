@@ -2,12 +2,12 @@ package com.hubspot.horizon.ning.internal;
 
 import javax.net.ssl.SSLException;
 
-import com.hubspot.horizon.SSLConfig;
+import org.asynchttpclient.shaded.io.netty.handler.ssl.SslContext;
+import org.asynchttpclient.shaded.io.netty.handler.ssl.SslContextBuilder;
+import org.asynchttpclient.shaded.io.netty.handler.ssl.SslProvider;
+import org.asynchttpclient.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.SslProvider;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import com.hubspot.horizon.SSLConfig;
 
 public final class NingSSLContext {
 
