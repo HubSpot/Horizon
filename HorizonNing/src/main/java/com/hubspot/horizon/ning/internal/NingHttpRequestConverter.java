@@ -1,13 +1,24 @@
 package com.hubspot.horizon.ning.internal;
 
+import java.util.Map;
+
 import org.asynchttpclient.shaded.Request;
 import org.asynchttpclient.shaded.RequestBuilder;
+import org.asynchttpclient.shaded.io.netty.handler.codec.http.cookie.DefaultCookie;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Splitter;
+import com.google.common.base.Splitter.MapSplitter;
+import com.google.common.net.HttpHeaders;
 import com.hubspot.horizon.Header;
 import com.hubspot.horizon.HttpRequest;
 
 public final class NingHttpRequestConverter {
+  private static final MapSplitter COOKIE_SPLITTER = Splitter
+      .on(";")
+      .trimResults()
+      .withKeyValueSeparator('=');
+
   private final ObjectMapper mapper;
 
   public NingHttpRequestConverter(ObjectMapper mapper) {
@@ -26,8 +37,18 @@ public final class NingHttpRequestConverter {
     for (Header header : request.getHeaders()) {
       String name = header.getName();
 
-      if ("Host".equalsIgnoreCase(name)) {
+      if (HttpHeaders.HOST.equalsIgnoreCase(name)) {
         ningRequest.setVirtualHost(header.getValue());
+      } else if (HttpHeaders.COOKIE.equalsIgnoreCase(name)) {
+        Map<String, String> cookies = COOKIE_SPLITTER.split(header.getValue());
+
+        /*
+        need to use RequestBuilder#addCookie. simply adding a cookie header will
+        get blown away if there was a set-cookie directive on a previous response
+         */
+        cookies.forEach((cookieName, value) -> {
+          ningRequest.addCookie(new DefaultCookie(cookieName, value));
+        });
       } else {
         ningRequest.addHeader(name, header.getValue());
       }
