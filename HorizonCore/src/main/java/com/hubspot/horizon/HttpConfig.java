@@ -77,18 +77,18 @@ public class HttpConfig {
   }
 
   /**
-   * Unlike maxConnections, the HttpClient will use this per-host setting to IMMEDIATELY FAIL any requests
+   * Unlike {@link #getMaxConnections()}, the HttpClient will use this per-host setting to IMMEDIATELY FAIL any requests
    * that would cause it to exceed the connections per host limit.
    * The client does NOT block / wait for any amount of time if it gets a request when the max connections per host are already used up;
-   * instead, a TooManyConnectionsPerHostException is thrown from the client immediately.
+   * instead, a {@link org.asynchttpclient.shaded.exception.TooManyConnectionsPerHostException} is thrown from the client immediately.
    *
-   * Note, the `connectTimeout` doesn't come into play in this connection limiting.
+   * Note, {@link #getConnectTimeoutMillis()} doesn't come into play in this connection limiting.
    * Instead, the internal `acquireTimeout` is the timeout for acquiring a connection permit;
    * this setting isn't exposed and the default is 0.
    *
    * If you want to use the client to throttle requests indefinitely without throwing exceptions for connection limits,
-   * setting maxConnectionsPerHost to a higher number than maxConnections works most of the time
-   * (except there's some race condition that can be hit when the client is being totally overwhelmed).
+   * use {@link Builder#setMaxConnectionsPerHost(int)} to a higher number than {@link #getMaxConnections()} works
+   * most of the time (except there's some race condition that can be hit when the client is being totally overwhelmed).
    * If possible, it can be better to limit requests to the client.
    * For example, it might be possible to limit a thread pool that uses the client accordingly.
    *
