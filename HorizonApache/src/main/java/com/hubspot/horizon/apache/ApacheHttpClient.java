@@ -75,7 +75,7 @@ public class ApacheHttpClient implements HttpClient {
     builder.setDefaultRequestConfig(createRequestConfig(config));
     builder.setDefaultSocketConfig(createSocketConfig(config));
     builder.disableContentCompression();
-    
+
     this.apacheClient = builder.build();
     this.requestConverter = new ApacheHttpRequestConverter(config.getObjectMapper());
     this.config = config;
@@ -99,7 +99,7 @@ public class ApacheHttpClient implements HttpClient {
   private Registry<ConnectionSocketFactory> createSocketFactoryRegistry(HttpConfig config) {
     RegistryBuilder<ConnectionSocketFactory> builder = RegistryBuilder.create();
 
-    if (config.getSocksProxyHost().equals("")) {
+    if (config.isSocksProxied()) {
       builder.register("http", PlainConnectionSocketFactory.getSocketFactory());
       builder.register("https", ApacheSSLSocketFactory.forConfig(config.getSSLConfig()));
     }
@@ -156,7 +156,7 @@ public class ApacheHttpClient implements HttpClient {
 
       final HttpResponse response;
       try {
-        if (config.getSocksProxyHost().equals("")) {
+        if (config.isSocksProxied()) {
           apacheResponse = apacheClient.execute(apacheRequest);
         }
         else {

@@ -116,6 +116,8 @@ public class HttpConfig {
 
   public String getSocksProxyHost() { return socksProxyHost; }
 
+  public boolean isSocksProxied() { return !getSocksProxyHost().equals(""); }
+
   public Options getOptions() {
     Options options = new Options();
 
