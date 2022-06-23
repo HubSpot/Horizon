@@ -54,7 +54,7 @@ public class ApacheHttpClientTest {
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
   }
 
-  @Test(expected = HttpRuntimeException.class)
+  @Test(expected = Exception.class)
   public void shouldFailIfInvalidSocksProxyIsConfigured() {
     httpClient = new ApacheHttpClient("invalidSocksHost");
 
