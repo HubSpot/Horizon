@@ -75,8 +75,7 @@ public class ApacheHttpClient implements HttpClient {
     builder.setDefaultRequestConfig(createRequestConfig(config));
     builder.setDefaultSocketConfig(createSocketConfig(config));
     builder.disableContentCompression();
-
-
+    
     this.apacheClient = builder.build();
     this.requestConverter = new ApacheHttpRequestConverter(config.getObjectMapper());
     this.config = config;
