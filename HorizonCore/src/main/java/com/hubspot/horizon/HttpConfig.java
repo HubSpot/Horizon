@@ -25,6 +25,7 @@ public class HttpConfig {
   private final ObjectMapper mapper;
   private final SSLConfig sslConfig;
   private final String socksProxyHost;
+  private final int socksProxyPort;
 
   private HttpConfig(int maxConnections,
                      int maxConnectionsPerHost,
@@ -42,7 +43,8 @@ public class HttpConfig {
                      RetryStrategy retryStrategy,
                      ObjectMapper mapper,
                      SSLConfig sslConfig,
-                     String socksProxyHost) {
+                     String socksProxyHost,
+                     int socksProxyPort) {
     this.maxConnections = maxConnections;
     this.maxConnectionsPerHost = maxConnectionsPerHost;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
@@ -60,6 +62,7 @@ public class HttpConfig {
     this.mapper = mapper;
     this.sslConfig = sslConfig;
     this.socksProxyHost = socksProxyHost;
+    this.socksProxyPort = socksProxyPort;
   }
 
   public static Builder newBuilder() {
@@ -118,6 +121,8 @@ public class HttpConfig {
 
   public boolean isSocksProxied() { return !getSocksProxyHost().equals(""); }
 
+  public int getSocksProxyPort() { return socksProxyPort; }
+
   public Options getOptions() {
     Options options = new Options();
 
@@ -147,6 +152,7 @@ public class HttpConfig {
     private ObjectMapper mapper = new ObjectMapper();
     private SSLConfig sslConfig = SSLConfig.standard();
     private String socksProxyHost = "";
+    private int socksProxyPort = 1080;
 
     private Builder() { }
 
@@ -235,6 +241,11 @@ public class HttpConfig {
       return this;
     }
 
+    public Builder setSocksProxyPort(int socksProxyPort) {
+      this.socksProxyPort = socksProxyPort;
+      return this;
+    }
+
     public HttpConfig build() {
       return new HttpConfig(maxConnections,
               maxConnectionsPerHost,
@@ -252,7 +263,8 @@ public class HttpConfig {
               retryStrategy,
               mapper,
               sslConfig,
-              socksProxyHost);
+              socksProxyHost,
+              socksProxyPort);
     }
   }
 }

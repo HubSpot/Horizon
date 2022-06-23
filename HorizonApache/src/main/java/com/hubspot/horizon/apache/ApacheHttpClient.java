@@ -49,7 +49,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ApacheHttpClient implements HttpClient {
   private static final Logger LOG = LoggerFactory.getLogger(ApacheHttpClient.class);
-  private static final int SOCKS_PROXY_PORT = 1080;
 
   private final CloseableHttpClient apacheClient;
   private final ApacheHttpRequestConverter requestConverter;
@@ -83,8 +82,8 @@ public class ApacheHttpClient implements HttpClient {
     this.timer = new Timer("http-request-timeout", true);
   }
 
-  public ApacheHttpClient(String socksProxyHost) {
-    this(HttpConfig.newBuilder().setSocksProxyHost(socksProxyHost).build());
+  public ApacheHttpClient(String socksProxyHost, int socksProxyPort) {
+    this(HttpConfig.newBuilder().setSocksProxyHost(socksProxyHost).setSocksProxyPort(socksProxyPort).build());
   }
 
   private HttpClientConnectionManager createConnectionManager(HttpConfig config) {
@@ -157,7 +156,7 @@ public class ApacheHttpClient implements HttpClient {
       final HttpResponse response;
       try {
         if (config.isSocksProxied()) {
-          InetSocketAddress socksaddr = new InetSocketAddress(config.getSocksProxyHost(), SOCKS_PROXY_PORT);
+          InetSocketAddress socksaddr = new InetSocketAddress(config.getSocksProxyHost(), config.getSocksProxyPort());
           HttpClientContext context = HttpClientContext.create();
           context.setAttribute("socks.address", socksaddr);
           LOG.info("Sending http request to {} via proxy @{}", request.getUrl(), config.getSocksProxyHost());

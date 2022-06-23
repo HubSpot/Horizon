@@ -22,8 +22,8 @@ public class NingHttpClient implements HttpClient {
     this.delegate = new NingAsyncHttpClient(Preconditions.checkNotNull(config));
   }
 
-  public NingHttpClient(String socksProxyHost) {
-    this(HttpConfig.newBuilder().setSocksProxyHost(socksProxyHost).build());
+  public NingHttpClient(String socksProxyHost, int socksProxyPort) {
+    this(HttpConfig.newBuilder().setSocksProxyHost(socksProxyHost).setSocksProxyPort(socksProxyPort).build());
   }
 
   @Override

@@ -7,7 +7,6 @@ import com.hubspot.horizon.HttpConfig;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpRequest.Method;
 import com.hubspot.horizon.HttpResponse;
-import com.hubspot.horizon.HttpRuntimeException;
 import com.hubspot.horizon.SSLConfig;
 import com.hubspot.horizon.TestServer;
 import org.junit.After;
@@ -16,7 +15,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.SocketException;
 
 import static com.hubspot.horizon.Assertions.assertThat;
 
@@ -56,7 +54,7 @@ public class ApacheHttpClientTest {
 
   @Test(expected = Exception.class)
   public void shouldFailIfInvalidSocksProxyIsConfigured() {
-    httpClient = new ApacheHttpClient("invalidSocksHost");
+    httpClient = new ApacheHttpClient("invalidSocksHost", 1080);
 
     HttpRequest request = HttpRequest.newBuilder()
             .setMethod(Method.POST)
