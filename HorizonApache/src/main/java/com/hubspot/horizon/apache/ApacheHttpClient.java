@@ -17,11 +17,14 @@ import com.hubspot.horizon.apache.internal.CachedHttpResponse;
 import com.hubspot.horizon.apache.internal.DefaultHeadersRequestInterceptor;
 import com.hubspot.horizon.apache.internal.KeepAliveWithDefaultStrategy;
 import com.hubspot.horizon.apache.internal.LenientRedirectStrategy;
+import com.hubspot.horizon.apache.internal.ProxiedPlainConnectionSocketFactory;
+import com.hubspot.horizon.apache.internal.ProxiedSSLSocketFactory;
 import com.hubspot.horizon.apache.internal.SnappyContentEncodingResponseInterceptor;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.config.SocketConfig;
@@ -37,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -45,6 +49,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ApacheHttpClient implements HttpClient {
   private static final Logger LOG = LoggerFactory.getLogger(ApacheHttpClient.class);
+  private static final int SOCKS_PROXY_PORT = 1080;
 
   private final CloseableHttpClient apacheClient;
   private final ApacheHttpRequestConverter requestConverter;
@@ -71,11 +76,16 @@ public class ApacheHttpClient implements HttpClient {
     builder.setDefaultSocketConfig(createSocketConfig(config));
     builder.disableContentCompression();
 
+
     this.apacheClient = builder.build();
     this.requestConverter = new ApacheHttpRequestConverter(config.getObjectMapper());
     this.config = config;
     this.defaultOptions = config.getOptions();
     this.timer = new Timer("http-request-timeout", true);
+  }
+
+  public ApacheHttpClient(String socksProxyHost) {
+    this(HttpConfig.newBuilder().setSocksProxyHost(socksProxyHost).build());
   }
 
   private HttpClientConnectionManager createConnectionManager(HttpConfig config) {
@@ -90,8 +100,14 @@ public class ApacheHttpClient implements HttpClient {
   private Registry<ConnectionSocketFactory> createSocketFactoryRegistry(HttpConfig config) {
     RegistryBuilder<ConnectionSocketFactory> builder = RegistryBuilder.create();
 
-    builder.register("http", PlainConnectionSocketFactory.getSocketFactory());
-    builder.register("https", ApacheSSLSocketFactory.forConfig(config.getSSLConfig()));
+    if (config.getSocksProxyHost().equals("")) {
+      builder.register("http", PlainConnectionSocketFactory.getSocketFactory());
+      builder.register("https", ApacheSSLSocketFactory.forConfig(config.getSSLConfig()));
+    }
+    else {
+      builder.register("http", ProxiedPlainConnectionSocketFactory.getSocketFactory());
+      builder.register("https", ProxiedSSLSocketFactory.forConfig(config.getSSLConfig()));
+    }
 
     return builder.build();
   }
@@ -141,7 +157,15 @@ public class ApacheHttpClient implements HttpClient {
 
       final HttpResponse response;
       try {
-        apacheResponse = apacheClient.execute(apacheRequest);
+        if (config.getSocksProxyHost().equals("")) {
+          apacheResponse = apacheClient.execute(apacheRequest);
+        }
+        else {
+          InetSocketAddress socksaddr = new InetSocketAddress(config.getSocksProxyHost(), SOCKS_PROXY_PORT);
+          HttpClientContext context = HttpClientContext.create();
+          context.setAttribute("socks.address", socksaddr);
+          apacheResponse = apacheClient.execute(apacheRequest, context);
+        }
         response = CachedHttpResponse.from(new ApacheHttpResponse(request, apacheResponse, config.getObjectMapper()));
       } finally {
         // once this is done the timeout can be canceled

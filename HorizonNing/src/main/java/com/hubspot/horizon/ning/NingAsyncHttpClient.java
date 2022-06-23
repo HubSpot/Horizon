@@ -30,6 +30,8 @@ import com.hubspot.horizon.ning.internal.NingFuture;
 import com.hubspot.horizon.ning.internal.NingHttpRequestConverter;
 import com.hubspot.horizon.ning.internal.NingRetryHandler;
 import com.hubspot.horizon.ning.internal.NingSSLContext;
+import org.asynchttpclient.shaded.proxy.ProxyServer;
+import org.asynchttpclient.shaded.proxy.ProxyType;
 
 public class NingAsyncHttpClient implements AsyncHttpClient {
   private static final HashedWheelTimer TIMER = new HashedWheelTimer(newThreadFactory("NingAsyncHttpClient-Timer"));
@@ -49,7 +51,14 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
 
     this.eventLoopGroup = newEventLoopGroup();
 
-    AsyncHttpClientConfig ningConfig = new DefaultAsyncHttpClientConfig.Builder()
+    DefaultAsyncHttpClientConfig.Builder builder = new DefaultAsyncHttpClientConfig.Builder();
+
+    if (!config.getSocksProxyHost().equals("")) {
+      ProxyServer proxyServer = new ProxyServer.Builder(config.getSocksProxyHost(), 1080).setProxyType(ProxyType.SOCKS_V5).build();
+      builder.setProxyServer(proxyServer);
+    }
+
+    AsyncHttpClientConfig ningConfig = builder
             .addRequestFilter(new ThrottleRequestFilter(config.getMaxConnections()))
             .addRequestFilter(new AcceptEncodingRequestFilter())
             .addRequestFilter(new DefaultHeadersRequestFilter(config))
@@ -71,6 +80,10 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
     this.requestConverter = new NingHttpRequestConverter(config.getObjectMapper());
     this.defaultOptions = config.getOptions();
     this.mapper = config.getObjectMapper();
+  }
+
+  public NingAsyncHttpClient(String socksProxyHost) {
+    this(HttpConfig.newBuilder().setSocksProxyHost(socksProxyHost).build());
   }
 
   @Override
