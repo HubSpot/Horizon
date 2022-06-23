@@ -100,12 +100,12 @@ public class ApacheHttpClient implements HttpClient {
     RegistryBuilder<ConnectionSocketFactory> builder = RegistryBuilder.create();
 
     if (config.isSocksProxied()) {
-      builder.register("http", PlainConnectionSocketFactory.getSocketFactory());
-      builder.register("https", ApacheSSLSocketFactory.forConfig(config.getSSLConfig()));
-    }
-    else {
       builder.register("http", ProxiedPlainConnectionSocketFactory.getSocketFactory());
       builder.register("https", ProxiedSSLSocketFactory.forConfig(config.getSSLConfig()));
+    }
+    else {
+      builder.register("http", PlainConnectionSocketFactory.getSocketFactory());
+      builder.register("https", ApacheSSLSocketFactory.forConfig(config.getSSLConfig()));
     }
 
     return builder.build();
@@ -157,13 +157,13 @@ public class ApacheHttpClient implements HttpClient {
       final HttpResponse response;
       try {
         if (config.isSocksProxied()) {
-          apacheResponse = apacheClient.execute(apacheRequest);
-        }
-        else {
           InetSocketAddress socksaddr = new InetSocketAddress(config.getSocksProxyHost(), SOCKS_PROXY_PORT);
           HttpClientContext context = HttpClientContext.create();
           context.setAttribute("socks.address", socksaddr);
           apacheResponse = apacheClient.execute(apacheRequest, context);
+        }
+        else {
+          apacheResponse = apacheClient.execute(apacheRequest);
         }
         response = CachedHttpResponse.from(new ApacheHttpResponse(request, apacheResponse, config.getObjectMapper()));
       } finally {

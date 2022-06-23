@@ -53,7 +53,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
 
     DefaultAsyncHttpClientConfig.Builder builder = new DefaultAsyncHttpClientConfig.Builder();
 
-    if (!config.isSocksProxied()) {
+    if (config.isSocksProxied()) {
       ProxyServer proxyServer = new ProxyServer.Builder(config.getSocksProxyHost(), 1080).setProxyType(ProxyType.SOCKS_V5).build();
       builder.setProxyServer(proxyServer);
     }
