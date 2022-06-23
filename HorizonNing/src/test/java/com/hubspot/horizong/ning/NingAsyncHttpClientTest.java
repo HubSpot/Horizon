@@ -6,7 +6,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.util.concurrent.ExecutionException;
 
+import com.hubspot.horizon.HttpRuntimeException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -71,6 +73,18 @@ public class NingAsyncHttpClientTest {
     HttpResponse response = httpClient.execute(request).get();
 
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
+  }
+
+  @Test(expected = Exception.class)
+  public void shouldFailIfInvalidSocksProxyIsConfigured() throws Exception {
+    httpClient = new NingAsyncHttpClient("invalidSocksHost");
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .setMethod(Method.POST)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().build())
+            .build();
+    httpClient.execute(request).get();
   }
 
   @Test

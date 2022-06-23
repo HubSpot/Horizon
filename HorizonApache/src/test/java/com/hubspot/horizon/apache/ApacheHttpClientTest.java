@@ -7,6 +7,7 @@ import com.hubspot.horizon.HttpConfig;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpRequest.Method;
 import com.hubspot.horizon.HttpResponse;
+import com.hubspot.horizon.HttpRuntimeException;
 import com.hubspot.horizon.SSLConfig;
 import com.hubspot.horizon.TestServer;
 import org.junit.After;
@@ -15,6 +16,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.SocketException;
 
 import static com.hubspot.horizon.Assertions.assertThat;
 
@@ -50,6 +52,18 @@ public class ApacheHttpClientTest {
     HttpResponse response = httpClient.execute(request);
 
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
+  }
+
+  @Test(expected = HttpRuntimeException.class)
+  public void shouldFailIfInvalidSocksProxyIsConfigured() {
+    httpClient = new ApacheHttpClient("invalidSocksHost");
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .setMethod(Method.POST)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().build())
+            .build();
+    httpClient.execute(request);
   }
 
   @Test
