@@ -160,6 +160,7 @@ public class ApacheHttpClient implements HttpClient {
           InetSocketAddress socksaddr = new InetSocketAddress(config.getSocksProxyHost(), SOCKS_PROXY_PORT);
           HttpClientContext context = HttpClientContext.create();
           context.setAttribute("socks.address", socksaddr);
+          LOG.info("Sending http request to {} via proxy @{}", request.getUrl(), config.getSocksProxyHost());
           apacheResponse = apacheClient.execute(apacheRequest, context);
         }
         else {
