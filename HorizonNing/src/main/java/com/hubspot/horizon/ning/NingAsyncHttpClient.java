@@ -86,10 +86,6 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
     this.mapper = config.getObjectMapper();
   }
 
-  public NingAsyncHttpClient(String socksProxyHost, int socksProxyPort) {
-    this(HttpConfig.newBuilder().setSocksProxyHost(socksProxyHost).setSocksProxyPort(socksProxyPort).build());
-  }
-
   @Override
   public ListenableFuture<HttpResponse> execute(HttpRequest request) {
     return execute(Preconditions.checkNotNull(request), Options.DEFAULT);

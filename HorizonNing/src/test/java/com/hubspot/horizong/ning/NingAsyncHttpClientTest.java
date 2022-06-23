@@ -58,6 +58,18 @@ public class NingAsyncHttpClientTest {
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
   }
 
+  @Test(expected = Exception.class)
+  public void shouldFailIfInvalidSocksProxyIsConfiguredForHttp() throws Exception {
+    httpClient = new NingAsyncHttpClient(HttpConfig.newBuilder().setSocksProxyHost("invalidSocksHost").build());
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .setMethod(Method.POST)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().build())
+            .build();
+    httpClient.execute(request).get();
+  }
+
   @Test
   @Ignore
   public void itWorksWithHttps() throws Exception {
@@ -74,8 +86,8 @@ public class NingAsyncHttpClientTest {
   }
 
   @Test(expected = Exception.class)
-  public void shouldFailIfInvalidSocksProxyIsConfigured() throws Exception {
-    httpClient = new NingAsyncHttpClient("invalidSocksHost", 1080);
+  public void shouldFailIfInvalidSocksProxyIsConfiguredForHttps() throws Exception {
+    httpClient = new NingAsyncHttpClient(HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).setSocksProxyHost("invalidSocksHost").build());
 
     HttpRequest request = HttpRequest.newBuilder()
             .setMethod(Method.POST)

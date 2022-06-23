@@ -53,8 +53,8 @@ public class ApacheHttpClientTest {
   }
 
   @Test(expected = Exception.class)
-  public void shouldFailIfInvalidSocksProxyIsConfigured() {
-    httpClient = new ApacheHttpClient("invalidSocksHost", 1080);
+  public void shouldFailIfInvalidSocksProxyIsConfiguredforHttp() {
+    httpClient = new ApacheHttpClient(HttpConfig.newBuilder().setSocksProxyHost("invalidProxyHost").build());
 
     HttpRequest request = HttpRequest.newBuilder()
             .setMethod(Method.POST)
@@ -76,6 +76,18 @@ public class ApacheHttpClientTest {
     HttpResponse response = httpClient.execute(request);
 
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
+  }
+
+  @Test(expected = Exception.class)
+  public void shouldFailIfInvalidSocksProxyIsConfiguredforHttps() {
+    httpClient = new ApacheHttpClient(HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).setSocksProxyHost("invalidProxyHost").build());
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .setMethod(Method.POST)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().build())
+            .build();
+    httpClient.execute(request);
   }
 
   @Test

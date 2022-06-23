@@ -82,10 +82,6 @@ public class ApacheHttpClient implements HttpClient {
     this.timer = new Timer("http-request-timeout", true);
   }
 
-  public ApacheHttpClient(String socksProxyHost, int socksProxyPort) {
-    this(HttpConfig.newBuilder().setSocksProxyHost(socksProxyHost).setSocksProxyPort(socksProxyPort).build());
-  }
-
   private HttpClientConnectionManager createConnectionManager(HttpConfig config) {
     Registry<ConnectionSocketFactory> registry = createSocketFactoryRegistry(config);
     PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(registry);
