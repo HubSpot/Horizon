@@ -97,8 +97,7 @@ public class ApacheHttpClient implements HttpClient {
     if (config.isSocksProxied()) {
       builder.register("http", ProxiedPlainConnectionSocketFactory.getSocketFactory());
       builder.register("https", ProxiedSSLSocketFactory.forConfig(config.getSSLConfig()));
-    }
-    else {
+    } else {
       builder.register("http", PlainConnectionSocketFactory.getSocketFactory());
       builder.register("https", ApacheSSLSocketFactory.forConfig(config.getSSLConfig()));
     }
@@ -155,10 +154,9 @@ public class ApacheHttpClient implements HttpClient {
           InetSocketAddress socksaddr = new InetSocketAddress(config.getSocksProxyHost(), config.getSocksProxyPort());
           HttpClientContext context = HttpClientContext.create();
           context.setAttribute("socks.address", socksaddr);
-          LOG.info("Sending http request to {} via proxy @{}", request.getUrl(), config.getSocksProxyHost());
+          LOG.debug("Sending http request to {} via proxy @{}", request.getUrl(), config.getSocksProxyHost());
           apacheResponse = apacheClient.execute(apacheRequest, context);
-        }
-        else {
+        } else {
           apacheResponse = apacheClient.execute(apacheRequest);
         }
         response = CachedHttpResponse.from(new ApacheHttpResponse(request, apacheResponse, config.getObjectMapper()));
