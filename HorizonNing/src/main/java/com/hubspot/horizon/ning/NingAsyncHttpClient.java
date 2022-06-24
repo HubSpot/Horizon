@@ -30,9 +30,14 @@ import com.hubspot.horizon.ning.internal.NingFuture;
 import com.hubspot.horizon.ning.internal.NingHttpRequestConverter;
 import com.hubspot.horizon.ning.internal.NingRetryHandler;
 import com.hubspot.horizon.ning.internal.NingSSLContext;
+import org.asynchttpclient.shaded.proxy.ProxyServer;
+import org.asynchttpclient.shaded.proxy.ProxyType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NingAsyncHttpClient implements AsyncHttpClient {
   private static final HashedWheelTimer TIMER = new HashedWheelTimer(newThreadFactory("NingAsyncHttpClient-Timer"));
+  private static final Logger LOG = LoggerFactory.getLogger(NingAsyncHttpClient.class);
 
   private final org.asynchttpclient.shaded.AsyncHttpClient ningClient;
   private final NingHttpRequestConverter requestConverter;
@@ -49,7 +54,15 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
 
     this.eventLoopGroup = newEventLoopGroup();
 
-    AsyncHttpClientConfig ningConfig = new DefaultAsyncHttpClientConfig.Builder()
+    DefaultAsyncHttpClientConfig.Builder builder = new DefaultAsyncHttpClientConfig.Builder();
+
+    if (config.isSocksProxied()) {
+      LOG.info("Client is configured for SOCKS proxy @{}", config.getSocksProxyHost());
+      ProxyServer proxyServer = new ProxyServer.Builder(config.getSocksProxyHost(), config.getSocksProxyPort()).setProxyType(ProxyType.SOCKS_V5).build();
+      builder.setProxyServer(proxyServer);
+    }
+
+    AsyncHttpClientConfig ningConfig = builder
             .addRequestFilter(new ThrottleRequestFilter(config.getMaxConnections()))
             .addRequestFilter(new AcceptEncodingRequestFilter())
             .addRequestFilter(new DefaultHeadersRequestFilter(config))

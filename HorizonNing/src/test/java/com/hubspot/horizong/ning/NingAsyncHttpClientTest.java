@@ -58,6 +58,18 @@ public class NingAsyncHttpClientTest {
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
   }
 
+  @Test(expected = Exception.class)
+  public void shouldFailIfInvalidSocksProxyIsConfiguredForHttp() throws Exception {
+    httpClient = new NingAsyncHttpClient(HttpConfig.newBuilder().setSocksProxyHost("invalidSocksHost").build());
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .setMethod(Method.POST)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().build())
+            .build();
+    httpClient.execute(request).get();
+  }
+
   @Test
   @Ignore
   public void itWorksWithHttps() throws Exception {
@@ -71,6 +83,18 @@ public class NingAsyncHttpClientTest {
     HttpResponse response = httpClient.execute(request).get();
 
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
+  }
+
+  @Test(expected = Exception.class)
+  public void shouldFailIfInvalidSocksProxyIsConfiguredForHttps() throws Exception {
+    httpClient = new NingAsyncHttpClient(HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).setSocksProxyHost("invalidSocksHost").build());
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .setMethod(Method.POST)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().build())
+            .build();
+    httpClient.execute(request).get();
   }
 
   @Test
@@ -164,10 +188,10 @@ public class NingAsyncHttpClientTest {
     httpClient = new NingAsyncHttpClient();
 
     HttpRequest request = HttpRequest.newBuilder()
-        .setMethod(Method.DELETE)
-        .setUrl(testServer.baseHttpUrl())
-        .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
-        .build();
+            .setMethod(Method.DELETE)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
+            .build();
     HttpResponse response = httpClient.execute(request).get();
 
     assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0);

@@ -52,6 +52,18 @@ public class ApacheHttpClientTest {
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
   }
 
+  @Test(expected = Exception.class)
+  public void shouldFailIfInvalidSocksProxyIsConfiguredforHttp() {
+    httpClient = new ApacheHttpClient(HttpConfig.newBuilder().setSocksProxyHost("invalidProxyHost").build());
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .setMethod(Method.POST)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().build())
+            .build();
+    httpClient.execute(request);
+  }
+
   @Test
   public void itWorksWithHttps() {
     httpClient = new ApacheHttpClient(HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).build());
@@ -64,6 +76,18 @@ public class ApacheHttpClientTest {
     HttpResponse response = httpClient.execute(request);
 
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
+  }
+
+  @Test(expected = Exception.class)
+  public void shouldFailIfInvalidSocksProxyIsConfiguredforHttps() {
+    httpClient = new ApacheHttpClient(HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).setSocksProxyHost("invalidProxyHost").build());
+
+    HttpRequest request = HttpRequest.newBuilder()
+            .setMethod(Method.POST)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().build())
+            .build();
+    httpClient.execute(request);
   }
 
   @Test
@@ -157,10 +181,10 @@ public class ApacheHttpClientTest {
     httpClient = new ApacheHttpClient();
 
     HttpRequest request = HttpRequest.newBuilder()
-        .setMethod(Method.DELETE)
-        .setUrl(testServer.baseHttpUrl())
-        .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
-        .build();
+            .setMethod(Method.DELETE)
+            .setUrl(testServer.baseHttpUrl())
+            .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
+            .build();
     HttpResponse response = httpClient.execute(request);
 
     assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0);
