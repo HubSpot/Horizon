@@ -19,49 +19,49 @@ import java.security.cert.X509Certificate;
 
 public class ProxiedSSLSocketFactory {
 
-    public static SSLConnectionSocketFactory forConfig(SSLConfig config) {
-        try {
-            if (config.isAcceptAllSSL()) {
-                return acceptAllSSLSocketFactory();
-            } else {
-                return standardSSLSocketFactory(config);
-            }
-        } catch (GeneralSecurityException e) {
-            throw new RuntimeException(e);
-        }
+  public static SSLConnectionSocketFactory forConfig(SSLConfig config) {
+    try {
+      if (config.isAcceptAllSSL()) {
+        return acceptAllSSLSocketFactory();
+      } else {
+        return standardSSLSocketFactory(config);
+      }
+    } catch (GeneralSecurityException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static SSLConnectionSocketFactory acceptAllSSLSocketFactory() throws GeneralSecurityException {
+    SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustAllTrustStrategy()).build();
+
+    return new SocksConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
+  }
+
+  private static SSLConnectionSocketFactory standardSSLSocketFactory(SSLConfig config) throws GeneralSecurityException {
+    SSLContext sslContext = SSLContext.getInstance("TLS");
+    sslContext.init(config.getKeyManagers(), config.getTrustManagers(), null);
+
+    return new SocksConnectionSocketFactory(sslContext, new DefaultHostnameVerifier());
+  }
+
+  private static class TrustAllTrustStrategy implements TrustStrategy {
+
+    @Override
+    public boolean isTrusted(X509Certificate[] chain, String authType) {
+      return true;
+    }
+  }
+
+  static class SocksConnectionSocketFactory extends SSLConnectionSocketFactory {
+    public SocksConnectionSocketFactory(SSLContext sslContext, HostnameVerifier hostnameVerifier) {
+      super(sslContext, hostnameVerifier);
     }
 
-    private static SSLConnectionSocketFactory acceptAllSSLSocketFactory() throws GeneralSecurityException {
-        SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustAllTrustStrategy()).build();
-
-        return new SocksConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
+    @Override
+    public Socket createSocket(final HttpContext context) throws IOException {
+      InetSocketAddress socksaddr = (InetSocketAddress) context.getAttribute("socks.address");
+      Proxy proxy = new Proxy(Proxy.Type.SOCKS, socksaddr);
+      return new Socket(proxy);
     }
-
-    private static SSLConnectionSocketFactory standardSSLSocketFactory(SSLConfig config) throws GeneralSecurityException {
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(config.getKeyManagers(), config.getTrustManagers(), null);
-
-        return new SocksConnectionSocketFactory(sslContext, new DefaultHostnameVerifier());
-    }
-
-    private static class TrustAllTrustStrategy implements TrustStrategy {
-
-        @Override
-        public boolean isTrusted(X509Certificate[] chain, String authType) {
-            return true;
-        }
-    }
-
-    static class SocksConnectionSocketFactory extends SSLConnectionSocketFactory {
-        public SocksConnectionSocketFactory(SSLContext sslContext, HostnameVerifier hostnameVerifier) {
-            super(sslContext, hostnameVerifier);
-        }
-
-        @Override
-        public Socket createSocket(final HttpContext context) throws IOException {
-            InetSocketAddress socksaddr = (InetSocketAddress) context.getAttribute("socks.address");
-            Proxy proxy = new Proxy(Proxy.Type.SOCKS, socksaddr);
-            return new Socket(proxy);
-        }
-    }
+  }
 }
