@@ -181,10 +181,10 @@ public class ApacheHttpClientTest {
     httpClient = new ApacheHttpClient();
 
     HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.DELETE)
-            .setUrl(testServer.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
-            .build();
+        .setMethod(Method.DELETE)
+        .setUrl(testServer.baseHttpUrl())
+        .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
+        .build();
     HttpResponse response = httpClient.execute(request);
 
     assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0);

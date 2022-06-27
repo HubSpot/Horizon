@@ -188,10 +188,10 @@ public class NingAsyncHttpClientTest {
     httpClient = new NingAsyncHttpClient();
 
     HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.DELETE)
-            .setUrl(testServer.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
-            .build();
+        .setMethod(Method.DELETE)
+        .setUrl(testServer.baseHttpUrl())
+        .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
+        .build();
     HttpResponse response = httpClient.execute(request).get();
 
     assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0);
