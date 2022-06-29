@@ -33,13 +33,7 @@ public class ProxiedSSLSocketFactory {
   }
 
   private static SSLConnectionSocketFactory acceptAllSSLSocketFactory() throws GeneralSecurityException {
-    SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustStrategy() {
-
-      @Override
-      public boolean isTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
-        return true;
-      }
-    }).build();
+    SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, (certChain, authType) -> true).build();
 
     return new SocksConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
   }
