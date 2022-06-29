@@ -79,7 +79,7 @@ public class ApacheHttpClientTest {
 
   @Test
   public void shouldFailIfInvalidSocksProxyIsConfiguredforHttps() {
-    httpClient = new ApacheHttpClient(HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).setSocksProxyHost("invalidProxyHost").build());
+    httpClient = new ApacheHttpClient(HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).setSocksProxyHost(invalidSocksHost).build());
 
     HttpRequest request = HttpRequest.newBuilder()
             .setMethod(Method.POST)
