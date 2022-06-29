@@ -1,7 +1,15 @@
 package com.hubspot.horizon.apache;
 
-import com.hubspot.horizon.*;
+import com.hubspot.horizon.Compression;
+import com.hubspot.horizon.ExpectedHttpResponse;
+import com.hubspot.horizon.HttpClient;
+import com.hubspot.horizon.HttpConfig;
+import com.hubspot.horizon.HttpRequest;
+import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.HttpRequest.Method;
+import com.hubspot.horizon.HttpRuntimeException;
+import com.hubspot.horizon.SSLConfig;
+import com.hubspot.horizon.TestServer;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -9,7 +17,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.net.SocketException;
-import java.util.concurrent.ExecutionException;
 
 import static com.hubspot.horizon.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
