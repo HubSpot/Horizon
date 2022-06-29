@@ -127,7 +127,7 @@ public class HttpConfig {
   }
 
   public int getSocksProxyPort() {
-    return socksProxyPort; 
+    return socksProxyPort;
   }
 
   public Options getOptions() {
