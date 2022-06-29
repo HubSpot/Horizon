@@ -15,6 +15,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 public class ProxiedSSLSocketFactory {
@@ -32,7 +33,13 @@ public class ProxiedSSLSocketFactory {
   }
 
   private static SSLConnectionSocketFactory acceptAllSSLSocketFactory() throws GeneralSecurityException {
-    SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustAllTrustStrategy()).build();
+    SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustStrategy() {
+
+      @Override
+      public boolean isTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+        return true;
+      }
+    }).build();
 
     return new SocksConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
   }
@@ -44,15 +51,7 @@ public class ProxiedSSLSocketFactory {
     return new SocksConnectionSocketFactory(sslContext, new DefaultHostnameVerifier());
   }
 
-  private static class TrustAllTrustStrategy implements TrustStrategy {
-
-    @Override
-    public boolean isTrusted(X509Certificate[] chain, String authType) {
-      return true;
-    }
-  }
-
-  static class SocksConnectionSocketFactory extends SSLConnectionSocketFactory {
+  private static class SocksConnectionSocketFactory extends SSLConnectionSocketFactory {
     public SocksConnectionSocketFactory(SSLContext sslContext, HostnameVerifier hostnameVerifier) {
       super(sslContext, hostnameVerifier);
     }
