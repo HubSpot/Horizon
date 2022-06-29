@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
 import com.hubspot.horizon.HttpRequest.Options;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class HttpConfig {
@@ -24,7 +25,7 @@ public class HttpConfig {
   private final RetryStrategy retryStrategy;
   private final ObjectMapper mapper;
   private final SSLConfig sslConfig;
-  private final String socksProxyHost;
+  private final Optional<String> socksProxyHost;
   private final int socksProxyPort;
 
   private HttpConfig(int maxConnections,
@@ -43,7 +44,7 @@ public class HttpConfig {
                      RetryStrategy retryStrategy,
                      ObjectMapper mapper,
                      SSLConfig sslConfig,
-                     String socksProxyHost,
+                     Optional<String> socksProxyHost,
                      int socksProxyPort) {
     this.maxConnections = maxConnections;
     this.maxConnectionsPerHost = maxConnectionsPerHost;
@@ -117,9 +118,9 @@ public class HttpConfig {
     return sslConfig;
   }
 
-  public String getSocksProxyHost() { return socksProxyHost; }
+  public Optional<String> getSocksProxyHost() { return socksProxyHost; }
 
-  public boolean isSocksProxied() { return !getSocksProxyHost().equals(""); }
+  public boolean isSocksProxied() { return getSocksProxyHost().isPresent(); }
 
   public int getSocksProxyPort() { return socksProxyPort; }
 
@@ -151,7 +152,7 @@ public class HttpConfig {
     private RetryStrategy retryStrategy = RetryStrategy.DEFAULT;
     private ObjectMapper mapper = new ObjectMapper();
     private SSLConfig sslConfig = SSLConfig.standard();
-    private String socksProxyHost = "";
+    private Optional<String> socksProxyHost = Optional.empty();
     private int socksProxyPort = 1080;
 
     private Builder() { }
@@ -237,7 +238,7 @@ public class HttpConfig {
     }
 
     public Builder setSocksProxyHost(String socksProxyHost) {
-      this.socksProxyHost = socksProxyHost;
+      this.socksProxyHost = Optional.of(socksProxyHost);
       return this;
     }
 
