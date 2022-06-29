@@ -1,25 +1,22 @@
 package com.hubspot.horizon.apache;
 
-import com.hubspot.horizon.Compression;
-import com.hubspot.horizon.ExpectedHttpResponse;
-import com.hubspot.horizon.HttpClient;
-import com.hubspot.horizon.HttpConfig;
-import com.hubspot.horizon.HttpRequest;
+import com.hubspot.horizon.*;
 import com.hubspot.horizon.HttpRequest.Method;
-import com.hubspot.horizon.HttpResponse;
-import com.hubspot.horizon.SSLConfig;
-import com.hubspot.horizon.TestServer;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.SocketException;
+import java.util.concurrent.ExecutionException;
 
 import static com.hubspot.horizon.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class ApacheHttpClientTest {
   private static final TestServer testServer = new TestServer();
+  private static final String invalidSocksHost = "invalidSocksHost";
 
   private HttpClient httpClient;
 
@@ -52,16 +49,18 @@ public class ApacheHttpClientTest {
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
   }
 
-  @Test(expected = Exception.class)
+  @Test
   public void shouldFailIfInvalidSocksProxyIsConfiguredforHttp() {
-    httpClient = new ApacheHttpClient(HttpConfig.newBuilder().setSocksProxyHost("invalidProxyHost").build());
+    httpClient = new ApacheHttpClient(HttpConfig.newBuilder().setSocksProxyHost(invalidSocksHost).build());
 
     HttpRequest request = HttpRequest.newBuilder()
             .setMethod(Method.POST)
             .setUrl(testServer.baseHttpUrl())
             .setBody(ExpectedHttpResponse.newBuilder().build())
             .build();
-    httpClient.execute(request);
+    assertThatExceptionOfType(HttpRuntimeException.class).isThrownBy(() -> {
+      httpClient.execute(request);
+    }).withMessageContaining(invalidSocksHost).withCauseInstanceOf(SocketException.class);
   }
 
   @Test
@@ -78,7 +77,7 @@ public class ApacheHttpClientTest {
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
   }
 
-  @Test(expected = Exception.class)
+  @Test
   public void shouldFailIfInvalidSocksProxyIsConfiguredforHttps() {
     httpClient = new ApacheHttpClient(HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).setSocksProxyHost("invalidProxyHost").build());
 
@@ -87,7 +86,9 @@ public class ApacheHttpClientTest {
             .setUrl(testServer.baseHttpUrl())
             .setBody(ExpectedHttpResponse.newBuilder().build())
             .build();
-    httpClient.execute(request);
+    assertThatExceptionOfType(HttpRuntimeException.class).isThrownBy(() -> {
+      httpClient.execute(request);
+    }).withMessageContaining(invalidSocksHost).withCauseInstanceOf(SocketException.class);
   }
 
   @Test

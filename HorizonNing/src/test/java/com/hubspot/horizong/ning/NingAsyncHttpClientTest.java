@@ -2,10 +2,13 @@ package com.hubspot.horizong.ning;
 
 import static com.hubspot.horizon.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.net.UnknownHostException;
+import java.util.concurrent.ExecutionException;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -26,6 +29,7 @@ import com.hubspot.horizon.ning.NingAsyncHttpClient;
 
 public class NingAsyncHttpClientTest {
   private static final TestServer testServer = new TestServer();
+  private static final String invalidSocksHost = "invalidSocksHost";
 
   private AsyncHttpClient httpClient;
 
@@ -58,16 +62,18 @@ public class NingAsyncHttpClientTest {
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
   }
 
-  @Test(expected = Exception.class)
+  @Test
   public void shouldFailIfInvalidSocksProxyIsConfiguredForHttp() throws Exception {
-    httpClient = new NingAsyncHttpClient(HttpConfig.newBuilder().setSocksProxyHost("invalidSocksHost").build());
+    httpClient = new NingAsyncHttpClient(HttpConfig.newBuilder().setSocksProxyHost(invalidSocksHost).build());
 
     HttpRequest request = HttpRequest.newBuilder()
             .setMethod(Method.POST)
             .setUrl(testServer.baseHttpUrl())
             .setBody(ExpectedHttpResponse.newBuilder().build())
             .build();
-    httpClient.execute(request).get();
+    assertThatExceptionOfType(ExecutionException.class).isThrownBy(() -> {
+      httpClient.execute(request).get();
+    }).withMessageContaining(invalidSocksHost).withCauseInstanceOf(UnknownHostException.class);
   }
 
   @Test
@@ -85,16 +91,18 @@ public class NingAsyncHttpClientTest {
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
   }
 
-  @Test(expected = Exception.class)
+  @Test
   public void shouldFailIfInvalidSocksProxyIsConfiguredForHttps() throws Exception {
-    httpClient = new NingAsyncHttpClient(HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).setSocksProxyHost("invalidSocksHost").build());
+    httpClient = new NingAsyncHttpClient(HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).setSocksProxyHost(invalidSocksHost).build());
 
     HttpRequest request = HttpRequest.newBuilder()
             .setMethod(Method.POST)
             .setUrl(testServer.baseHttpUrl())
             .setBody(ExpectedHttpResponse.newBuilder().build())
             .build();
-    httpClient.execute(request).get();
+    assertThatExceptionOfType(ExecutionException.class).isThrownBy(() -> {
+      httpClient.execute(request).get();
+    }).withMessageContaining(invalidSocksHost).withCauseInstanceOf(UnknownHostException.class);
   }
 
   @Test
