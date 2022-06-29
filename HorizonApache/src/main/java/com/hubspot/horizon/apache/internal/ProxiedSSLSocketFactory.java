@@ -4,7 +4,6 @@ import com.hubspot.horizon.SSLConfig;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContexts;
 
@@ -15,8 +14,6 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 
 public class ProxiedSSLSocketFactory {
 
