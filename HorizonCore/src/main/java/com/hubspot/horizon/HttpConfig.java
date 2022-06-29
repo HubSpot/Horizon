@@ -118,11 +118,17 @@ public class HttpConfig {
     return sslConfig;
   }
 
-  public Optional<String> getSocksProxyHost() { return socksProxyHost; }
+  public Optional<String> getSocksProxyHost() {
+    return socksProxyHost;
+  }
 
-  public boolean isSocksProxied() { return getSocksProxyHost().isPresent(); }
+  public boolean isSocksProxied() {
+    return getSocksProxyHost().isPresent();
+  }
 
-  public int getSocksProxyPort() { return socksProxyPort; }
+  public int getSocksProxyPort() {
+    return socksProxyPort; 
+  }
 
   public Options getOptions() {
     Options options = new Options();
