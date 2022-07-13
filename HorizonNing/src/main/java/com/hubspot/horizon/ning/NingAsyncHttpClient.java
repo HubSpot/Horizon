@@ -58,7 +58,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
 
     if (config.isSocksProxied()) {
       LOG.info(
-        "Client will be routed via SOCKS proxy with host: {} and port: {}",
+        "Client will be routed via SOCKS proxy {}:{}",
         config.getSocksProxyHost().get(),
         config.getSocksProxyPort()
       );
