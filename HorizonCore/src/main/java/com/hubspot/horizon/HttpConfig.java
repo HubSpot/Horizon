@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
 import com.hubspot.horizon.HttpRequest.Options;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class HttpConfig {
@@ -24,6 +25,8 @@ public class HttpConfig {
   private final RetryStrategy retryStrategy;
   private final ObjectMapper mapper;
   private final SSLConfig sslConfig;
+  private final Optional<String> socksProxyHost;
+  private final int socksProxyPort;
 
   private HttpConfig(int maxConnections,
                      int maxConnectionsPerHost,
@@ -40,7 +43,9 @@ public class HttpConfig {
                      int maxRetryBackoffSeconds,
                      RetryStrategy retryStrategy,
                      ObjectMapper mapper,
-                     SSLConfig sslConfig) {
+                     SSLConfig sslConfig,
+                     Optional<String> socksProxyHost,
+                     int socksProxyPort) {
     this.maxConnections = maxConnections;
     this.maxConnectionsPerHost = maxConnectionsPerHost;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
@@ -57,6 +62,8 @@ public class HttpConfig {
     this.retryStrategy = retryStrategy;
     this.mapper = mapper;
     this.sslConfig = sslConfig;
+    this.socksProxyHost = socksProxyHost;
+    this.socksProxyPort = socksProxyPort;
   }
 
   public static Builder newBuilder() {
@@ -111,6 +118,18 @@ public class HttpConfig {
     return sslConfig;
   }
 
+  public Optional<String> getSocksProxyHost() {
+    return socksProxyHost;
+  }
+
+  public boolean isSocksProxied() {
+    return getSocksProxyHost().isPresent();
+  }
+
+  public int getSocksProxyPort() {
+    return socksProxyPort;
+  }
+
   public Options getOptions() {
     Options options = new Options();
 
@@ -139,6 +158,8 @@ public class HttpConfig {
     private RetryStrategy retryStrategy = RetryStrategy.DEFAULT;
     private ObjectMapper mapper = new ObjectMapper();
     private SSLConfig sslConfig = SSLConfig.standard();
+    private Optional<String> socksProxyHost = Optional.empty();
+    private int socksProxyPort = 1080;
 
     private Builder() { }
 
@@ -222,6 +243,16 @@ public class HttpConfig {
       return this;
     }
 
+    public Builder setSocksProxyHost(String socksProxyHost) {
+      this.socksProxyHost = Optional.of(socksProxyHost);
+      return this;
+    }
+
+    public Builder setSocksProxyPort(int socksProxyPort) {
+      this.socksProxyPort = socksProxyPort;
+      return this;
+    }
+
     public HttpConfig build() {
       return new HttpConfig(maxConnections,
               maxConnectionsPerHost,
@@ -238,7 +269,9 @@ public class HttpConfig {
               maxRetryBackoffSeconds,
               retryStrategy,
               mapper,
-              sslConfig);
+              sslConfig,
+              socksProxyHost,
+              socksProxyPort);
     }
   }
 }
