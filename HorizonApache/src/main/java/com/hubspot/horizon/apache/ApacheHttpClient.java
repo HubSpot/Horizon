@@ -81,6 +81,10 @@ public class ApacheHttpClient implements HttpClient {
     this.defaultOptions = config.getOptions();
     this.timer = new Timer("http-request-timeout", true);
   }
+  
+  public boolean isSocksProxied() {
+    return config.isSocksProxied();
+  }
 
   private HttpClientConnectionManager createConnectionManager(HttpConfig config) {
     Registry<ConnectionSocketFactory> registry = createSocketFactoryRegistry(config);
