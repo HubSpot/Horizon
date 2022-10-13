@@ -82,7 +82,7 @@ public class ApacheHttpClient implements HttpClient {
     this.timer = new Timer("http-request-timeout", true);
   }
   
-  public boolean usesSocksProxy() {
+  public boolean isSocksProxied() {
     return config.isSocksProxied();
   }
 
