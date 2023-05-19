@@ -10,6 +10,11 @@ import org.asynchttpclient.shaded.io.netty.handler.ssl.util.InsecureTrustManager
 import com.hubspot.horizon.SSLConfig;
 
 public final class NingSSLContext {
+  // TLS 1.0 and TLS 1.1 are deprecated
+  private static final String[] TLS_VERSIONS = new String[] {
+    "TLSv1.2",
+    "TLSv1.3"
+  };
 
   private NingSSLContext() {
     throw new AssertionError();
@@ -17,7 +22,7 @@ public final class NingSSLContext {
 
   public static SslContext forConfig(SSLConfig config) {
     try {
-      SslContextBuilder builder = SslContextBuilder.forClient().sslProvider(SslProvider.JDK);
+      SslContextBuilder builder = SslContextBuilder.forClient().sslProvider(SslProvider.JDK).protocols(TLS_VERSIONS);
 
       if (config.isAcceptAllSSL()) {
         builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
