@@ -12,6 +12,8 @@ import com.hubspot.horizon.SSLConfig;
 public final class NingSSLContext {
   // TLS 1.0 and TLS 1.1 are deprecated
   private static final String[] TLS_VERSIONS = new String[] {
+    "TLSv1.0",
+    "TLSv1.1",
     "TLSv1.2",
     "TLSv1.3"
   };
