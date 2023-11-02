@@ -1,14 +1,14 @@
 package com.hubspot.horizon.apache.internal;
 
+import com.google.common.net.HttpHeaders;
+import com.hubspot.horizon.HorizonHeaders;
+import com.hubspot.horizon.HttpConfig;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.protocol.HttpContext;
 
-import com.google.common.net.HttpHeaders;
-import com.hubspot.horizon.HorizonHeaders;
-import com.hubspot.horizon.HttpConfig;
-
 public class DefaultHeadersRequestInterceptor implements HttpRequestInterceptor {
+
   private final HttpConfig config;
 
   public DefaultHeadersRequestInterceptor(HttpConfig config) {
@@ -24,7 +24,10 @@ public class DefaultHeadersRequestInterceptor implements HttpRequestInterceptor 
       request.addHeader(HttpHeaders.USER_AGENT, config.getUserAgent());
     }
     if (!request.containsHeader(HorizonHeaders.REQUEST_TIMEOUT)) {
-      request.addHeader(HorizonHeaders.REQUEST_TIMEOUT, String.valueOf(config.getRequestTimeoutMillis()));
+      request.addHeader(
+        HorizonHeaders.REQUEST_TIMEOUT,
+        String.valueOf(config.getRequestTimeoutMillis())
+      );
     }
   }
 }

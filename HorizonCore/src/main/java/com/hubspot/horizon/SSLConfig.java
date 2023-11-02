@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
-
 import javax.annotation.Nullable;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -12,11 +11,16 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 public class SSLConfig {
+
   private final KeyManagerFactory keyManagerFactory;
   private final TrustManagerFactory trustManagerFactory;
   private final boolean acceptAllSSL;
 
-  private SSLConfig(@Nullable KeyManagerFactory keyManagerFactory, @Nullable TrustManagerFactory trustManagerFactory, boolean acceptAllSSL) {
+  private SSLConfig(
+    @Nullable KeyManagerFactory keyManagerFactory,
+    @Nullable TrustManagerFactory trustManagerFactory,
+    boolean acceptAllSSL
+  ) {
     this.keyManagerFactory = keyManagerFactory;
     this.trustManagerFactory = trustManagerFactory;
     this.acceptAllSSL = acceptAllSSL;
@@ -59,10 +63,14 @@ public class SSLConfig {
       KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
       keyStore.load(keyStoreStream, password.toCharArray());
 
-      KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+      KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(
+        KeyManagerFactory.getDefaultAlgorithm()
+      );
       keyManagerFactory.init(keyStore, password.toCharArray());
 
-      TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+      TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
+        TrustManagerFactory.getDefaultAlgorithm()
+      );
       trustManagerFactory.init(keyStore);
 
       return custom(keyManagerFactory, trustManagerFactory);
@@ -71,7 +79,10 @@ public class SSLConfig {
     }
   }
 
-  public static SSLConfig custom(KeyManagerFactory keyManagerFactory, TrustManagerFactory trustManagerFactory) {
+  public static SSLConfig custom(
+    KeyManagerFactory keyManagerFactory,
+    TrustManagerFactory trustManagerFactory
+  ) {
     return new SSLConfig(keyManagerFactory, trustManagerFactory, false);
   }
 }

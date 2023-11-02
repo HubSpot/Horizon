@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class NingFuture extends AbstractFuture<HttpResponse> {
+
   private final Callback callback;
 
   public NingFuture(Callback callback) {
@@ -37,6 +38,7 @@ public class NingFuture extends AbstractFuture<HttpResponse> {
   }
 
   private static final class CallbackWrapper implements Callback {
+
     private static final Logger LOG = LoggerFactory.getLogger(CallbackWrapper.class);
 
     private final Callback callback;

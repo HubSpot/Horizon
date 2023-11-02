@@ -1,13 +1,11 @@
 package com.hubspot.horizon.ning.internal;
 
+import com.hubspot.horizon.SSLConfig;
 import javax.net.ssl.SSLException;
-
 import org.asynchttpclient.shaded.io.netty.handler.ssl.SslContext;
 import org.asynchttpclient.shaded.io.netty.handler.ssl.SslContextBuilder;
 import org.asynchttpclient.shaded.io.netty.handler.ssl.SslProvider;
 import org.asynchttpclient.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-
-import com.hubspot.horizon.SSLConfig;
 
 public final class NingSSLContext {
 
@@ -17,7 +15,9 @@ public final class NingSSLContext {
 
   public static SslContext forConfig(SSLConfig config) {
     try {
-      SslContextBuilder builder = SslContextBuilder.forClient().sslProvider(SslProvider.JDK);
+      SslContextBuilder builder = SslContextBuilder
+        .forClient()
+        .sslProvider(SslProvider.JDK);
 
       if (config.isAcceptAllSSL()) {
         builder.trustManager(InsecureTrustManagerFactory.INSTANCE);

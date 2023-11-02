@@ -1,12 +1,11 @@
 package com.hubspot.horizon;
 
 import com.hubspot.horizon.HttpRequest.Options;
-
 import java.util.Random;
 
 public final class RetryHelper {
-  private static final ThreadLocal<Random> RANDOM = new ThreadLocal<Random>() {
 
+  private static final ThreadLocal<Random> RANDOM = new ThreadLocal<Random>() {
     @Override
     protected Random initialValue() {
       return new Random();
@@ -19,7 +18,8 @@ public final class RetryHelper {
 
   public static int computeBackoff(Options options, int retries) {
     int initialBackoff = options.getInitialRetryBackoffMillis();
-    int computedBackoff = nextInt(initialBackoff / 4) + (initialBackoff * retries * retries);
+    int computedBackoff =
+      nextInt(initialBackoff / 4) + (initialBackoff * retries * retries);
 
     return Math.min(computedBackoff, options.getMaxRetryBackoffMillis());
   }

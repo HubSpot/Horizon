@@ -4,17 +4,21 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.hubspot.horizon.HttpRequest.Builder;
 import com.hubspot.horizon.HttpRequest.ParameterSetter;
-
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 public class ParameterSetterImpl implements ParameterSetter {
+
   private final String name;
   private final Builder builder;
   private final Map<String, List<String>> parameters;
 
-  public ParameterSetterImpl(String name, Builder builder, Map<String, List<String>> parameters) {
+  public ParameterSetterImpl(
+    String name,
+    Builder builder,
+    Map<String, List<String>> parameters
+  ) {
     this.name = Preconditions.checkNotNull(name);
     this.builder = Preconditions.checkNotNull(builder);
     this.parameters = Preconditions.checkNotNull(parameters);

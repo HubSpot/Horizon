@@ -2,7 +2,6 @@ package com.hubspot.horizon.internal.codec;
 
 import com.google.common.base.Optional;
 import com.hubspot.horizon.Compression;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;

@@ -7,8 +7,8 @@ public enum EmptyCallback implements Callback {
   INSTANCE;
 
   @Override
-  public void completed(HttpResponse response) { }
+  public void completed(HttpResponse response) {}
 
   @Override
-  public void failed(Exception e) { }
+  public void failed(Exception e) {}
 }

@@ -1,11 +1,10 @@
 package com.hubspot.horizon.apache.internal;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.apache.http.ProtocolException;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
-
-import java.net.URI;
-import java.net.URISyntaxException;
 
 public class LenientRedirectStrategy extends DefaultRedirectStrategy {
 

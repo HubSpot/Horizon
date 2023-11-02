@@ -1,23 +1,22 @@
 package com.hubspot.horizon.ning.internal;
 
-import java.util.Map;
-
-import org.asynchttpclient.shaded.Request;
-import org.asynchttpclient.shaded.RequestBuilder;
-import org.asynchttpclient.shaded.io.netty.handler.codec.http.cookie.DefaultCookie;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
 import com.google.common.base.Splitter.MapSplitter;
 import com.google.common.net.HttpHeaders;
 import com.hubspot.horizon.Header;
 import com.hubspot.horizon.HttpRequest;
+import java.util.Map;
+import org.asynchttpclient.shaded.Request;
+import org.asynchttpclient.shaded.RequestBuilder;
+import org.asynchttpclient.shaded.io.netty.handler.codec.http.cookie.DefaultCookie;
 
 public final class NingHttpRequestConverter {
+
   private static final MapSplitter COOKIE_SPLITTER = Splitter
-      .on(";")
-      .trimResults()
-      .withKeyValueSeparator('=');
+    .on(";")
+    .trimResults()
+    .withKeyValueSeparator('=');
 
   private final ObjectMapper mapper;
 

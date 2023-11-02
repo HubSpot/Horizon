@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
 import com.hubspot.horizon.HttpRequest.Options;
-
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class HttpConfig {
+
   private final int maxConnections;
   private final int maxConnectionsPerHost;
   private final int connectTimeoutSeconds;
@@ -28,24 +28,26 @@ public class HttpConfig {
   private final Optional<String> socksProxyHost;
   private final int socksProxyPort;
 
-  private HttpConfig(int maxConnections,
-                     int maxConnectionsPerHost,
-                     int connectTimeoutSeconds,
-                     int requestTimeoutSeconds,
-                     int defaultKeepAliveSeconds,
-                     int connectionTtlSeconds,
-                     int maxRedirects,
-                     String userAgent,
-                     boolean followRedirects,
-                     boolean rejectRelativeRedirects,
-                     int maxRetries,
-                     int initialRetryBackoffSeconds,
-                     int maxRetryBackoffSeconds,
-                     RetryStrategy retryStrategy,
-                     ObjectMapper mapper,
-                     SSLConfig sslConfig,
-                     Optional<String> socksProxyHost,
-                     int socksProxyPort) {
+  private HttpConfig(
+    int maxConnections,
+    int maxConnectionsPerHost,
+    int connectTimeoutSeconds,
+    int requestTimeoutSeconds,
+    int defaultKeepAliveSeconds,
+    int connectionTtlSeconds,
+    int maxRedirects,
+    String userAgent,
+    boolean followRedirects,
+    boolean rejectRelativeRedirects,
+    int maxRetries,
+    int initialRetryBackoffSeconds,
+    int maxRetryBackoffSeconds,
+    RetryStrategy retryStrategy,
+    ObjectMapper mapper,
+    SSLConfig sslConfig,
+    Optional<String> socksProxyHost,
+    int socksProxyPort
+  ) {
     this.maxConnections = maxConnections;
     this.maxConnectionsPerHost = maxConnectionsPerHost;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
@@ -142,6 +144,7 @@ public class HttpConfig {
   }
 
   public static class Builder {
+
     private int maxConnections = 100;
     private int maxConnectionsPerHost = 25;
     private int connectTimeoutSeconds = 1;
@@ -161,7 +164,7 @@ public class HttpConfig {
     private Optional<String> socksProxyHost = Optional.empty();
     private int socksProxyPort = 1080;
 
-    private Builder() { }
+    private Builder() {}
 
     public Builder setMaxConnections(int maxConnections) {
       this.maxConnections = maxConnections;
@@ -254,24 +257,26 @@ public class HttpConfig {
     }
 
     public HttpConfig build() {
-      return new HttpConfig(maxConnections,
-              maxConnectionsPerHost,
-              connectTimeoutSeconds,
-              requestTimeoutSeconds,
-              defaultKeepAliveSeconds,
-              connectionTtlSeconds,
-              maxRedirects,
-              userAgent,
-              followRedirects,
-              rejectRelativeRedirects,
-              maxRetries,
-              initialRetryBackoffSeconds,
-              maxRetryBackoffSeconds,
-              retryStrategy,
-              mapper,
-              sslConfig,
-              socksProxyHost,
-              socksProxyPort);
+      return new HttpConfig(
+        maxConnections,
+        maxConnectionsPerHost,
+        connectTimeoutSeconds,
+        requestTimeoutSeconds,
+        defaultKeepAliveSeconds,
+        connectionTtlSeconds,
+        maxRedirects,
+        userAgent,
+        followRedirects,
+        rejectRelativeRedirects,
+        maxRetries,
+        initialRetryBackoffSeconds,
+        maxRetryBackoffSeconds,
+        retryStrategy,
+        mapper,
+        sslConfig,
+        socksProxyHost,
+        socksProxyPort
+      );
     }
   }
 }

@@ -7,12 +7,12 @@ import com.hubspot.horizon.Headers;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.internal.AbstractHttpResponse;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 public class CachedHttpResponse extends AbstractHttpResponse {
+
   private final AbstractHttpResponse delegate;
   private final byte[] responseBytes;
 
@@ -21,14 +21,18 @@ public class CachedHttpResponse extends AbstractHttpResponse {
     try {
       this.responseBytes = delegate.getAsBytes();
     } catch (RuntimeException e) {
-      throw e.getCause() instanceof IOException ? (IOException) e.getCause() : new IOException(e);
+      throw e.getCause() instanceof IOException
+        ? (IOException) e.getCause()
+        : new IOException(e);
     } finally {
       Closeables.closeQuietly(delegate.getAsInputStream());
     }
   }
 
   public static HttpResponse from(AbstractHttpResponse response) throws IOException {
-    return response instanceof CachedHttpResponse ? response : new CachedHttpResponse(response);
+    return response instanceof CachedHttpResponse
+      ? response
+      : new CachedHttpResponse(response);
   }
 
   @Override

@@ -2,7 +2,6 @@ package com.hubspot.horizon;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.hubspot.horizon.HttpRequest.Options;
-
 import java.io.Closeable;
 
 public interface AsyncHttpClient extends Closeable {

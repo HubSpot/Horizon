@@ -3,6 +3,7 @@ package com.hubspot.horizon;
 import com.google.common.base.Preconditions;
 
 public class Header {
+
   private final String name;
   private final String value;
 

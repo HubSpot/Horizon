@@ -5,12 +5,12 @@ import com.google.common.base.Preconditions;
 import com.hubspot.horizon.Headers;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.internal.AbstractHttpResponse;
-import org.xerial.snappy.SnappyInputStream;
-
 import java.io.IOException;
 import java.io.InputStream;
+import org.xerial.snappy.SnappyInputStream;
 
 public class SnappyHttpResponseWrapper extends AbstractHttpResponse {
+
   private final AbstractHttpResponse delegate;
   private final InputStream wrapped;
 

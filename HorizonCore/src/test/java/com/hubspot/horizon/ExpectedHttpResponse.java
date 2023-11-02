@@ -6,23 +6,25 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.net.HttpHeaders;
-
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletResponse;
 
 public class ExpectedHttpResponse {
+
   private final int statusCode;
   private final Map<String, List<String>> headers;
   private final String body;
 
   @JsonCreator
-  private ExpectedHttpResponse(@JsonProperty("statusCode") int statusCode,
-                               @JsonProperty("headers") Map<String, List<String>> headers,
-                               @JsonProperty("body") @Nullable String body) {
+  private ExpectedHttpResponse(
+    @JsonProperty("statusCode") int statusCode,
+    @JsonProperty("headers") Map<String, List<String>> headers,
+    @JsonProperty("body") @Nullable String body
+  ) {
     this.statusCode = statusCode;
     this.headers = headers;
     this.body = body;
@@ -50,12 +52,13 @@ public class ExpectedHttpResponse {
   }
 
   public static class Builder {
+
     private int statusCode = HttpServletResponse.SC_OK;
     private Map<String, List<String>> headers = new HashMap<String, List<String>>();
     private Compression compression = Compression.NONE;
     private String body = null;
 
-    private Builder() { }
+    private Builder() {}
 
     public Builder setStatusCode(int statusCode) {
       this.statusCode = statusCode;
@@ -77,7 +80,10 @@ public class ExpectedHttpResponse {
 
       Optional<String> contentEncoding = compression.getContentEncodingHeaderValue();
       if (contentEncoding.isPresent()) {
-        headers.put(HttpHeaders.CONTENT_ENCODING, Lists.newArrayList(contentEncoding.get()));
+        headers.put(
+          HttpHeaders.CONTENT_ENCODING,
+          Lists.newArrayList(contentEncoding.get())
+        );
       }
 
       return new ExpectedHttpResponse(statusCode, headers, body);
