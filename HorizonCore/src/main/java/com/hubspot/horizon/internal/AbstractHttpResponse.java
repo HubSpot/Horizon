@@ -9,7 +9,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 import com.hubspot.horizon.HttpResponse;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -44,7 +43,8 @@ public abstract class AbstractHttpResponse implements HttpResponse {
   @Override
   public <T> T getAs(Class<T> clazz) {
     try {
-      return getObjectMapper().readValue(getAsInputStream(), Preconditions.checkNotNull(clazz));
+      return getObjectMapper()
+        .readValue(getAsInputStream(), Preconditions.checkNotNull(clazz));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -53,7 +53,8 @@ public abstract class AbstractHttpResponse implements HttpResponse {
   @Override
   public <T> T getAs(TypeReference<T> type) {
     try {
-      return getObjectMapper().readValue(getAsInputStream(), Preconditions.checkNotNull(type));
+      return getObjectMapper()
+        .readValue(getAsInputStream(), Preconditions.checkNotNull(type));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -62,7 +63,8 @@ public abstract class AbstractHttpResponse implements HttpResponse {
   @Override
   public <T> T getAs(JavaType type) {
     try {
-      return getObjectMapper().readValue(getAsInputStream(), Preconditions.checkNotNull(type));
+      return getObjectMapper()
+        .readValue(getAsInputStream(), Preconditions.checkNotNull(type));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -79,7 +81,10 @@ public abstract class AbstractHttpResponse implements HttpResponse {
 
   @Override
   public String getAsString() {
-    InputStreamReader inputStreamReader = new InputStreamReader(getAsInputStream(), Charsets.UTF_8);
+    InputStreamReader inputStreamReader = new InputStreamReader(
+      getAsInputStream(),
+      Charsets.UTF_8
+    );
 
     try {
       return CharStreams.toString(inputStreamReader);

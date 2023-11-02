@@ -7,7 +7,6 @@ import com.hubspot.horizon.HttpRequest.Options;
 import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.RetryHelper;
 import com.hubspot.horizon.RetryStrategy;
-
 import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -17,12 +16,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class NingRetryHandler implements RetryStrategy {
-  private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder()
-          .setDaemon(true)
-          .setNameFormat("NingAsyncHttpClient-Retry-%d")
-          .build();
 
-  private static final ScheduledExecutorService RETRY_EXECUTOR = Executors.newScheduledThreadPool(5, THREAD_FACTORY);
+  private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder()
+    .setDaemon(true)
+    .setNameFormat("NingAsyncHttpClient-Retry-%d")
+    .build();
+
+  private static final ScheduledExecutorService RETRY_EXECUTOR = Executors.newScheduledThreadPool(
+    5,
+    THREAD_FACTORY
+  );
 
   private final AtomicReference<Runnable> retryRunnable;
   private final Options options;
@@ -39,17 +42,25 @@ public class NingRetryHandler implements RetryStrategy {
   }
 
   public void retry() {
-    RETRY_EXECUTOR.schedule(retryRunnable(), computeBackoff(currentRetries.incrementAndGet()), TimeUnit.MILLISECONDS);
+    RETRY_EXECUTOR.schedule(
+      retryRunnable(),
+      computeBackoff(currentRetries.incrementAndGet()),
+      TimeUnit.MILLISECONDS
+    );
   }
 
   @Override
   public boolean shouldRetry(HttpRequest request, HttpResponse response) {
-    return retriesRemaining() && options.getRetryStrategy().shouldRetry(request, response);
+    return (
+      retriesRemaining() && options.getRetryStrategy().shouldRetry(request, response)
+    );
   }
 
   @Override
   public boolean shouldRetry(HttpRequest request, IOException exception) {
-    return retriesRemaining() && options.getRetryStrategy().shouldRetry(request, exception);
+    return (
+      retriesRemaining() && options.getRetryStrategy().shouldRetry(request, exception)
+    );
   }
 
   private int computeBackoff(int retries) {

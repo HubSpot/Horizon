@@ -5,6 +5,7 @@ import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
 import org.apache.http.protocol.HttpContext;
 
 public class KeepAliveWithDefaultStrategy extends DefaultConnectionKeepAliveStrategy {
+
   private final long defaultValue;
 
   public KeepAliveWithDefaultStrategy(long defaultValue) {

@@ -1,7 +1,6 @@
 package com.hubspot.horizon;
 
 import com.hubspot.horizon.HttpRequest.Options;
-
 import java.io.Closeable;
 
 public interface HttpClient extends Closeable {

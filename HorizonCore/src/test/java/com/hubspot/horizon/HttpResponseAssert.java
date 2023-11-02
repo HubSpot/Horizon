@@ -1,9 +1,9 @@
 package com.hubspot.horizon;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.google.common.base.Charsets;
 import org.assertj.core.api.AbstractAssert;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpResponse> {
 
@@ -47,22 +47,26 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
   }
 
   public HttpResponseAssert wasGzipCompressed() {
-    assertThat(actual.getHeaders().getFirst("Request-Content-Encoding")).isEqualTo("gzip");
+    assertThat(actual.getHeaders().getFirst("Request-Content-Encoding"))
+      .isEqualTo("gzip");
     return this;
   }
 
   public HttpResponseAssert wasSnappyCompressed() {
-    assertThat(actual.getHeaders().getFirst("Request-Content-Encoding")).isEqualTo("snappy");
+    assertThat(actual.getHeaders().getFirst("Request-Content-Encoding"))
+      .isEqualTo("snappy");
     return this;
   }
 
   public HttpResponseAssert isGzipCompressed() {
-    assertThat(actual.getHeaders().getFirst("Response-Content-Encoding")).isEqualTo("gzip");
+    assertThat(actual.getHeaders().getFirst("Response-Content-Encoding"))
+      .isEqualTo("gzip");
     return this;
   }
 
   public HttpResponseAssert isSnappyCompressed() {
-    assertThat(actual.getHeaders().getFirst("Response-Content-Encoding")).isEqualTo("snappy");
+    assertThat(actual.getHeaders().getFirst("Response-Content-Encoding"))
+      .isEqualTo("snappy");
     return this;
   }
 

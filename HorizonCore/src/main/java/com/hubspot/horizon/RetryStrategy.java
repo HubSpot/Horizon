@@ -1,19 +1,18 @@
 package com.hubspot.horizon;
 
-import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.SSLPeerUnverifiedException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeoutException;
+import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLPeerUnverifiedException;
 
 public interface RetryStrategy {
   boolean shouldRetry(HttpRequest request, HttpResponse response);
   boolean shouldRetry(HttpRequest request, IOException exception);
 
   public RetryStrategy DEFAULT = new RetryStrategy() {
-
     @Override
     public boolean shouldRetry(HttpRequest request, HttpResponse response) {
       return response.isServerError();
@@ -49,7 +48,6 @@ public interface RetryStrategy {
   };
 
   public RetryStrategy NEVER_RETRY = new RetryStrategy() {
-
     @Override
     public boolean shouldRetry(HttpRequest request, HttpResponse response) {
       return false;

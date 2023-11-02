@@ -1,26 +1,27 @@
 package com.hubspot.horizon.ning.internal;
 
-import java.io.IOException;
-
-import org.asynchttpclient.shaded.AsyncCompletionHandler;
-import org.asynchttpclient.shaded.Response;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.net.HttpHeaders;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.internal.AbstractHttpResponse;
+import java.io.IOException;
+import org.asynchttpclient.shaded.AsyncCompletionHandler;
+import org.asynchttpclient.shaded.Response;
 
 public class NingCompletionHandler extends AsyncCompletionHandler<HttpResponse> {
+
   private final HttpRequest request;
   private final NingFuture future;
   private final NingRetryHandler retryHandler;
   private final ObjectMapper mapper;
 
-  public NingCompletionHandler(HttpRequest request,
-                               NingFuture future,
-                               NingRetryHandler retryHandler,
-                               ObjectMapper mapper) {
+  public NingCompletionHandler(
+    HttpRequest request,
+    NingFuture future,
+    NingRetryHandler retryHandler,
+    ObjectMapper mapper
+  ) {
     this.request = request;
     this.future = future;
     this.retryHandler = retryHandler;
