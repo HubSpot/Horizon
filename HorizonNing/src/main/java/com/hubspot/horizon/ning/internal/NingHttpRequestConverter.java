@@ -4,9 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
 import com.google.common.base.Splitter.MapSplitter;
 import com.google.common.net.HttpHeaders;
+import com.google.common.primitives.Ints;
 import com.hubspot.horizon.Header;
 import com.hubspot.horizon.HttpRequest;
+import com.hubspot.horizon.HttpRequest.Options;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.asynchttpclient.shaded.Request;
 import org.asynchttpclient.shaded.RequestBuilder;
 import org.asynchttpclient.shaded.io.netty.handler.codec.http.cookie.DefaultCookie;
@@ -25,6 +28,10 @@ public final class NingHttpRequestConverter {
   }
 
   public Request convert(HttpRequest request) {
+    return convert(request, Options.DEFAULT);
+  }
+
+  public Request convert(HttpRequest request, Options options) {
     RequestBuilder ningRequest = new RequestBuilder(request.getMethod().name());
     ningRequest.setUrl(request.getUrl().toString());
 
@@ -52,6 +59,17 @@ public final class NingHttpRequestConverter {
         ningRequest.addHeader(name, header.getValue());
       }
     }
+
+    options
+      .getRequestTimeoutSeconds()
+      .ifPresent(requestTimeoutSeconds -> {
+        int requestTimeoutMillis = Ints.checkedCast(
+          TimeUnit.SECONDS.toMillis(requestTimeoutSeconds)
+        );
+
+        ningRequest.setRequestTimeout(requestTimeoutMillis);
+        ningRequest.setReadTimeout(requestTimeoutMillis);
+      });
 
     return ningRequest.build();
   }

@@ -161,7 +161,7 @@ public class ApacheHttpClient implements HttpClient {
     int maxRetries = options.getMaxRetries();
     RetryStrategy retryStrategy = options.getRetryStrategy();
 
-    HttpUriRequest apacheRequest = requestConverter.convert(request);
+    HttpUriRequest apacheRequest = requestConverter.convert(request, options);
     org.apache.http.HttpResponse apacheResponse = null;
     AtomicBoolean timedOut = new AtomicBoolean(false);
     try {

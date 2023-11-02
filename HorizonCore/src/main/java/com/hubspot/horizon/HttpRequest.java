@@ -4,7 +4,6 @@ import static com.google.common.base.Charsets.UTF_8;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.UrlEscapers;
@@ -17,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.apache.commons.codec.binary.Base64;
@@ -135,13 +135,22 @@ public class HttpRequest {
 
     public static Options DEFAULT = new Options();
 
-    private Optional<Integer> maxRetries = Optional.absent();
-    private Optional<Integer> initialRetryBackoffSeconds = Optional.absent();
-    private Optional<Integer> maxRetryBackoffSeconds = Optional.absent();
-    private Optional<RetryStrategy> retryStrategy = Optional.absent();
+    private Optional<Integer> requestTimeoutSeconds = Optional.empty();
+    private Optional<Integer> maxRetries = Optional.empty();
+    private Optional<Integer> initialRetryBackoffSeconds = Optional.empty();
+    private Optional<Integer> maxRetryBackoffSeconds = Optional.empty();
+    private Optional<RetryStrategy> retryStrategy = Optional.empty();
+
+    public Optional<Integer> getRequestTimeoutSeconds() {
+      return requestTimeoutSeconds;
+    }
+
+    public void setRequestTimeoutSeconds(int requestTimeoutSeconds) {
+      this.requestTimeoutSeconds = Optional.of(requestTimeoutSeconds);
+    }
 
     public int getMaxRetries() {
-      return maxRetries.or(0);
+      return maxRetries.orElse(0);
     }
 
     public void setMaxRetries(int maxRetries) {
@@ -150,7 +159,7 @@ public class HttpRequest {
 
     public int getInitialRetryBackoffMillis() {
       return Ints.checkedCast(
-        TimeUnit.SECONDS.toMillis(initialRetryBackoffSeconds.or(1))
+        TimeUnit.SECONDS.toMillis(initialRetryBackoffSeconds.orElse(1))
       );
     }
 
@@ -159,7 +168,9 @@ public class HttpRequest {
     }
 
     public int getMaxRetryBackoffMillis() {
-      return Ints.checkedCast(TimeUnit.SECONDS.toMillis(maxRetryBackoffSeconds.or(30)));
+      return Ints.checkedCast(
+        TimeUnit.SECONDS.toMillis(maxRetryBackoffSeconds.orElse(30))
+      );
     }
 
     public void setMaxRetryBackoffSeconds(int maxRetryBackoffSeconds) {
@@ -167,7 +178,7 @@ public class HttpRequest {
     }
 
     public RetryStrategy getRetryStrategy() {
-      return retryStrategy.or(RetryStrategy.NEVER_RETRY);
+      return retryStrategy.orElse(RetryStrategy.NEVER_RETRY);
     }
 
     public void setRetryStrategy(RetryStrategy retryStrategy) {
@@ -178,12 +189,14 @@ public class HttpRequest {
       Preconditions.checkNotNull(other);
       Options merged = new Options();
 
-      merged.maxRetries = other.maxRetries.or(maxRetries);
+      merged.requestTimeoutSeconds =
+        other.requestTimeoutSeconds.or(() -> requestTimeoutSeconds);
+      merged.maxRetries = other.maxRetries.or(() -> maxRetries);
       merged.initialRetryBackoffSeconds =
-        other.initialRetryBackoffSeconds.or(initialRetryBackoffSeconds);
+        other.initialRetryBackoffSeconds.or(() -> initialRetryBackoffSeconds);
       merged.maxRetryBackoffSeconds =
-        other.maxRetryBackoffSeconds.or(maxRetryBackoffSeconds);
-      merged.retryStrategy = other.retryStrategy.or(retryStrategy);
+        other.maxRetryBackoffSeconds.or(() -> maxRetryBackoffSeconds);
+      merged.retryStrategy = other.retryStrategy.or(() -> retryStrategy);
 
       return merged;
     }
@@ -335,7 +348,9 @@ public class HttpRequest {
     }
 
     private Headers buildHeaders() {
-      Optional<String> contentEncodingHeaderValue = compression.getContentEncodingHeaderValue();
+      Optional<String> contentEncodingHeaderValue = compression
+        .getContentEncodingHeaderValue()
+        .toJavaUtil();
       if (
         contentEncodingHeaderValue.isPresent() &&
         !headerPresent(HttpHeaders.CONTENT_ENCODING)

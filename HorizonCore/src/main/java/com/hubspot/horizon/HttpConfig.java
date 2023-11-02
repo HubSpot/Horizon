@@ -135,6 +135,7 @@ public class HttpConfig {
   public Options getOptions() {
     Options options = new Options();
 
+    options.setRequestTimeoutSeconds(requestTimeoutSeconds);
     options.setMaxRetries(maxRetries);
     options.setInitialRetryBackoffSeconds(initialRetryBackoffSeconds);
     options.setMaxRetryBackoffSeconds(maxRetryBackoffSeconds);
