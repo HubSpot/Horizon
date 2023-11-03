@@ -1,7 +1,9 @@
 package com.hubspot.horizon.apache;
 
 import static com.hubspot.horizon.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import com.hubspot.horizon.Compression;
 import com.hubspot.horizon.ExpectedHttpResponse;
@@ -9,12 +11,15 @@ import com.hubspot.horizon.HttpClient;
 import com.hubspot.horizon.HttpConfig;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpRequest.Method;
+import com.hubspot.horizon.HttpRequest.Options;
 import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.HttpRuntimeException;
 import com.hubspot.horizon.SSLConfig;
 import com.hubspot.horizon.TestServer;
 import java.io.IOException;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.time.Duration;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -61,7 +66,11 @@ public class ApacheHttpClientTest {
   public void shouldFailIfInvalidSocksProxyIsConfiguredforHttp() {
     httpClient =
       new ApacheHttpClient(
-        HttpConfig.newBuilder().setSocksProxyHost(INVALID_SOCKS_HOST).build()
+        HttpConfig
+          .newBuilder()
+          .setSocksProxyHost(INVALID_SOCKS_HOST)
+          .setMaxRetries(0)
+          .build()
       );
 
     HttpRequest request = HttpRequest
@@ -102,6 +111,7 @@ public class ApacheHttpClientTest {
           .newBuilder()
           .setSSLConfig(SSLConfig.acceptAll())
           .setSocksProxyHost(INVALID_SOCKS_HOST)
+          .setMaxRetries(0)
           .build()
       );
 
@@ -246,5 +256,59 @@ public class ApacheHttpClientTest {
     HttpResponse response = httpClient.execute(request);
 
     assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0);
+  }
+
+  @Test
+  public void itRespectsGlobalRequestTimeout() {
+    httpClient =
+      new ApacheHttpClient(HttpConfig.newBuilder().setRequestTimeoutSeconds(1).build());
+
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().setDelay(Duration.ofSeconds(2)).build())
+      .build();
+    Throwable t = catchThrowable(() -> httpClient.execute(request));
+
+    assertThat(t).isNotNull().hasRootCauseInstanceOf(SocketTimeoutException.class);
+  }
+
+  @Test
+  public void itRespectsPerRequestTimeoutWhenHigher() {
+    httpClient =
+      new ApacheHttpClient(HttpConfig.newBuilder().setRequestTimeoutSeconds(1).build());
+
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().setDelay(Duration.ofSeconds(2)).build())
+      .build();
+
+    Options options = new Options();
+    options.setRequestTimeoutSeconds(5);
+    HttpResponse response = httpClient.execute(request, options);
+
+    assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
+  }
+
+  @Test
+  public void itRespectsPerRequestTimeoutWhenLower() {
+    httpClient =
+      new ApacheHttpClient(HttpConfig.newBuilder().setRequestTimeoutSeconds(5).build());
+
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().setDelay(Duration.ofSeconds(2)).build())
+      .build();
+
+    Options options = new Options();
+    options.setRequestTimeoutSeconds(1);
+    Throwable t = catchThrowable(() -> httpClient.execute(request, options));
+
+    assertThat(t).isNotNull().hasRootCauseInstanceOf(SocketTimeoutException.class);
   }
 }

@@ -136,7 +136,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
       retryHandler,
       mapper
     );
-    final Request ningRequest = requestConverter.convert(request);
+    final Request ningRequest = requestConverter.convert(request, options);
     Runnable runnable = () -> {
       try {
         ningClient.executeRequest(ningRequest, completionHandler);
