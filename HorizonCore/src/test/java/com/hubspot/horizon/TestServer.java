@@ -7,6 +7,7 @@ import com.google.common.net.HttpHeaders;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -114,6 +115,10 @@ public class TestServer {
           ExpectedHttpResponse.class
         );
 
+        if (!expectedResponse.getDelay().isZero()) {
+          sleep(expectedResponse.getDelay());
+        }
+
         response.setStatus(expectedResponse.getStatusCode());
         response.addHeader(
           "X-Request-Count",
@@ -166,6 +171,15 @@ public class TestServer {
       } else {
         return counter.incrementAndGet();
       }
+    }
+  }
+
+  private static void sleep(Duration duration) {
+    try {
+      Thread.sleep(duration.toMillis());
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException(e);
     }
   }
 }

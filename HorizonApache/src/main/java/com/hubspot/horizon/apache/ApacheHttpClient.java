@@ -64,6 +64,7 @@ public class ApacheHttpClient implements HttpClient {
     Preconditions.checkNotNull(config);
 
     HttpClientBuilder builder = HttpClientBuilder.create();
+    RequestConfig requestConfig = createRequestConfig(config);
 
     builder.setConnectionManager(createConnectionManager(config));
     builder.setRedirectStrategy(new LenientRedirectStrategy());
@@ -76,12 +77,13 @@ public class ApacheHttpClient implements HttpClient {
     );
     builder.addInterceptorFirst(new DefaultHeadersRequestInterceptor(config));
     builder.addInterceptorFirst(new SnappyContentEncodingResponseInterceptor());
-    builder.setDefaultRequestConfig(createRequestConfig(config));
+    builder.setDefaultRequestConfig(requestConfig);
     builder.setDefaultSocketConfig(createSocketConfig(config));
     builder.disableContentCompression();
 
     this.apacheClient = builder.build();
-    this.requestConverter = new ApacheHttpRequestConverter(config.getObjectMapper());
+    this.requestConverter =
+      new ApacheHttpRequestConverter(config.getObjectMapper(), requestConfig);
     this.config = config;
     this.defaultOptions = config.getOptions();
     this.timer = new Timer("http-request-timeout", true);
@@ -131,7 +133,7 @@ public class ApacheHttpClient implements HttpClient {
   }
 
   private SocketConfig createSocketConfig(HttpConfig config) {
-    return SocketConfig.custom().setSoTimeout(config.getRequestTimeoutMillis()).build();
+    return SocketConfig.custom().setSoTimeout(config.getConnectTimeoutMillis()).build();
   }
 
   @Override
@@ -165,7 +167,7 @@ public class ApacheHttpClient implements HttpClient {
     org.apache.http.HttpResponse apacheResponse = null;
     AtomicBoolean timedOut = new AtomicBoolean(false);
     try {
-      TimerTask timeoutTask = setupTimeoutTask(apacheRequest, timedOut);
+      TimerTask timeoutTask = setupTimeoutTask(apacheRequest, options, timedOut);
 
       final HttpResponse response;
       try {
@@ -245,9 +247,15 @@ public class ApacheHttpClient implements HttpClient {
 
   private TimerTask setupTimeoutTask(
     final HttpUriRequest request,
+    final Options options,
     final AtomicBoolean timedOut
   ) {
-    int delay = config.getConnectTimeoutMillis() + config.getRequestTimeoutMillis();
+    long delay =
+      config.getConnectTimeoutMillis() +
+      options
+        .getRequestTimeoutSeconds()
+        .map(TimeUnit.SECONDS::toMillis)
+        .orElse((long) config.getRequestTimeoutMillis());
     TimerTask timeoutTask = new TimerTask() {
       @Override
       public void run() {

@@ -1,11 +1,13 @@
 package com.hubspot.horizon;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.net.HttpHeaders;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,16 +20,19 @@ public class ExpectedHttpResponse {
   private final int statusCode;
   private final Map<String, List<String>> headers;
   private final String body;
+  private final Duration delay;
 
   @JsonCreator
   private ExpectedHttpResponse(
     @JsonProperty("statusCode") int statusCode,
     @JsonProperty("headers") Map<String, List<String>> headers,
-    @JsonProperty("body") @Nullable String body
+    @JsonProperty("body") @Nullable String body,
+    @JsonProperty("delayMillis") long delayMillis
   ) {
     this.statusCode = statusCode;
     this.headers = headers;
     this.body = body;
+    this.delay = Duration.ofMillis(delayMillis);
   }
 
   public static Builder newBuilder() {
@@ -51,12 +56,22 @@ public class ExpectedHttpResponse {
     return body;
   }
 
+  @JsonIgnore
+  public Duration getDelay() {
+    return delay;
+  }
+
+  public long getDelayMillis() {
+    return delay.toMillis();
+  }
+
   public static class Builder {
 
     private int statusCode = HttpServletResponse.SC_OK;
     private Map<String, List<String>> headers = new HashMap<String, List<String>>();
     private Compression compression = Compression.NONE;
     private String body = null;
+    private Duration delay = Duration.ZERO;
 
     private Builder() {}
 
@@ -75,6 +90,11 @@ public class ExpectedHttpResponse {
       return this;
     }
 
+    public Builder setDelay(Duration delay) {
+      this.delay = Preconditions.checkNotNull(delay);
+      return this;
+    }
+
     public ExpectedHttpResponse build() {
       headers.put("X-Request-ID", Lists.newArrayList(UUID.randomUUID().toString()));
 
@@ -86,7 +106,7 @@ public class ExpectedHttpResponse {
         );
       }
 
-      return new ExpectedHttpResponse(statusCode, headers, body);
+      return new ExpectedHttpResponse(statusCode, headers, body, delay.toMillis());
     }
   }
 }

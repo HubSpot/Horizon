@@ -20,7 +20,11 @@ public class DefaultHeadersRequestFilter implements RequestFilter {
     if (!headers.contains(HorizonHeaders.REQUEST_TIMEOUT)) {
       headers.add(
         HorizonHeaders.REQUEST_TIMEOUT,
-        String.valueOf(config.getRequestTimeoutMillis())
+        String.valueOf(
+          context.getRequest().getRequestTimeout() > 0
+            ? context.getRequest().getRequestTimeout()
+            : config.getRequestTimeoutMillis()
+        )
       );
     }
     return context;

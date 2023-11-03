@@ -5,6 +5,7 @@ import com.hubspot.horizon.HorizonHeaders;
 import com.hubspot.horizon.HttpConfig;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.protocol.HttpContext;
 
 public class DefaultHeadersRequestInterceptor implements HttpRequestInterceptor {
@@ -24,10 +25,17 @@ public class DefaultHeadersRequestInterceptor implements HttpRequestInterceptor 
       request.addHeader(HttpHeaders.USER_AGENT, config.getUserAgent());
     }
     if (!request.containsHeader(HorizonHeaders.REQUEST_TIMEOUT)) {
-      request.addHeader(
-        HorizonHeaders.REQUEST_TIMEOUT,
-        String.valueOf(config.getRequestTimeoutMillis())
-      );
+      final int timeoutMillis;
+      if (
+        request instanceof HttpRequestBase &&
+        ((HttpRequestBase) request).getConfig() != null
+      ) {
+        timeoutMillis = ((HttpRequestBase) request).getConfig().getSocketTimeout();
+      } else {
+        timeoutMillis = config.getRequestTimeoutMillis();
+      }
+
+      request.addHeader(HorizonHeaders.REQUEST_TIMEOUT, String.valueOf(timeoutMillis));
     }
   }
 }
