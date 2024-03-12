@@ -1,5 +1,7 @@
 package com.hubspot.horizon;
 
+import static com.google.common.base.Charsets.UTF_8;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
@@ -8,9 +10,6 @@ import com.google.common.net.HttpHeaders;
 import com.google.common.net.UrlEscapers;
 import com.google.common.primitives.Ints;
 import com.hubspot.horizon.internal.ParameterSetterImpl;
-import org.apache.commons.codec.binary.Base64;
-
-import javax.annotation.Nullable;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -19,8 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
-
-import static com.google.common.base.Charsets.UTF_8;
+import javax.annotation.Nullable;
+import org.apache.commons.codec.binary.Base64;
 
 public class HttpRequest {
 
@@ -33,7 +32,12 @@ public class HttpRequest {
   }
 
   public enum Method {
-    GET(false), POST(true), PUT(true), DELETE(true), PATCH(true), HEAD(false);
+    GET(false),
+    POST(true),
+    PUT(true),
+    DELETE(true),
+    PATCH(true),
+    HEAD(false);
 
     private final boolean allowsBody;
 
@@ -74,13 +78,15 @@ public class HttpRequest {
   private final Object jsonBody;
   private final Options options;
 
-  private HttpRequest(Method method,
-                      URI url,
-                      Headers headers,
-                      Compression compression,
-                      @Nullable byte[] body,
-                      @Nullable Object jsonBody,
-                      Options options) {
+  private HttpRequest(
+    Method method,
+    URI url,
+    Headers headers,
+    Compression compression,
+    @Nullable byte[] body,
+    @Nullable Object jsonBody,
+    Options options
+  ) {
     this.method = Preconditions.checkNotNull(method);
     this.url = Preconditions.checkNotNull(url);
     this.headers = Preconditions.checkNotNull(headers);
@@ -126,6 +132,7 @@ public class HttpRequest {
   }
 
   public static class Options {
+
     public static Options DEFAULT = new Options();
 
     private Optional<Integer> maxRetries = Optional.absent();
@@ -142,7 +149,9 @@ public class HttpRequest {
     }
 
     public int getInitialRetryBackoffMillis() {
-      return Ints.checkedCast(TimeUnit.SECONDS.toMillis(initialRetryBackoffSeconds.or(1)));
+      return Ints.checkedCast(
+        TimeUnit.SECONDS.toMillis(initialRetryBackoffSeconds.or(1))
+      );
     }
 
     public void setInitialRetryBackoffSeconds(int initialRetryBackoffSeconds) {
@@ -170,8 +179,10 @@ public class HttpRequest {
       Options merged = new Options();
 
       merged.maxRetries = other.maxRetries.or(maxRetries);
-      merged.initialRetryBackoffSeconds = other.initialRetryBackoffSeconds.or(initialRetryBackoffSeconds);
-      merged.maxRetryBackoffSeconds = other.maxRetryBackoffSeconds.or(maxRetryBackoffSeconds);
+      merged.initialRetryBackoffSeconds =
+        other.initialRetryBackoffSeconds.or(initialRetryBackoffSeconds);
+      merged.maxRetryBackoffSeconds =
+        other.maxRetryBackoffSeconds.or(maxRetryBackoffSeconds);
       merged.retryStrategy = other.retryStrategy.or(retryStrategy);
 
       return merged;
@@ -179,6 +190,7 @@ public class HttpRequest {
   }
 
   public static class Builder {
+
     private String url = null;
     private Method method = Method.GET;
     private final Map<String, List<String>> queryParams = new LinkedHashMap<>();
@@ -191,7 +203,7 @@ public class HttpRequest {
     private ContentType accept = null;
     private Options options = new Options();
 
-    private Builder() { }
+    private Builder() {}
 
     public Builder setUrl(String url) {
       this.url = Preconditions.checkNotNull(url);
@@ -254,7 +266,10 @@ public class HttpRequest {
       }
 
       byte[] credentials = (user + ":" + password).getBytes(StandardCharsets.UTF_8);
-      addHeader(HttpHeaders.AUTHORIZATION, "Basic " + Base64.encodeBase64String(credentials));
+      addHeader(
+        HttpHeaders.AUTHORIZATION,
+        "Basic " + Base64.encodeBase64String(credentials)
+      );
       return this;
     }
 
@@ -302,10 +317,16 @@ public class HttpRequest {
         return;
       }
 
-      Preconditions.checkState(method.allowsBody(), "Cannot set body with method " + method);
+      Preconditions.checkState(
+        method.allowsBody(),
+        "Cannot set body with method " + method
+      );
 
       if (body != null) {
-        Preconditions.checkState(jsonBody == null && formParams.isEmpty(), "Cannot set more than one body");
+        Preconditions.checkState(
+          jsonBody == null && formParams.isEmpty(),
+          "Cannot set more than one body"
+        );
       } else if (jsonBody != null) {
         Preconditions.checkState(formParams.isEmpty(), "Cannot set more than one body");
       } else {
@@ -314,9 +335,15 @@ public class HttpRequest {
     }
 
     private Headers buildHeaders() {
-      Optional<String> contentEncodingHeaderValue = compression.getContentEncodingHeaderValue();
-      if (contentEncodingHeaderValue.isPresent() && !headerPresent(HttpHeaders.CONTENT_ENCODING)) {
-        headers.add(new Header(HttpHeaders.CONTENT_ENCODING, contentEncodingHeaderValue.get()));
+      Optional<String> contentEncodingHeaderValue =
+        compression.getContentEncodingHeaderValue();
+      if (
+        contentEncodingHeaderValue.isPresent() &&
+        !headerPresent(HttpHeaders.CONTENT_ENCODING)
+      ) {
+        headers.add(
+          new Header(HttpHeaders.CONTENT_ENCODING, contentEncodingHeaderValue.get())
+        );
       }
       if (contentType != null && !headerPresent(HttpHeaders.CONTENT_TYPE)) {
         headers.add(new Header(HttpHeaders.CONTENT_TYPE, contentType.getHeaderValue()));
@@ -353,7 +380,6 @@ public class HttpRequest {
             result.append('=');
             result.append(UrlEscapers.urlFormParameterEscaper().escape(value));
           }
-
         }
       }
 

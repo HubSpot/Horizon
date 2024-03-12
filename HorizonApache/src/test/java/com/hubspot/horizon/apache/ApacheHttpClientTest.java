@@ -1,5 +1,8 @@
 package com.hubspot.horizon.apache;
 
+import static com.hubspot.horizon.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.hubspot.horizon.Compression;
 import com.hubspot.horizon.ExpectedHttpResponse;
 import com.hubspot.horizon.HttpClient;
@@ -10,18 +13,15 @@ import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.HttpRuntimeException;
 import com.hubspot.horizon.SSLConfig;
 import com.hubspot.horizon.TestServer;
+import java.io.IOException;
+import java.net.SocketException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.net.SocketException;
-
-import static com.hubspot.horizon.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 public class ApacheHttpClientTest {
+
   private static final TestServer TEST_SERVER = new TestServer();
   private static final String INVALID_SOCKS_HOST = "invalidSocksHost";
 
@@ -46,11 +46,12 @@ public class ApacheHttpClientTest {
   public void itWorksWithHttp() {
     httpClient = new ApacheHttpClient();
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().build())
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().build())
+      .build();
     HttpResponse response = httpClient.execute(request);
 
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
@@ -58,13 +59,17 @@ public class ApacheHttpClientTest {
 
   @Test
   public void shouldFailIfInvalidSocksProxyIsConfiguredforHttp() {
-    httpClient = new ApacheHttpClient(HttpConfig.newBuilder().setSocksProxyHost(INVALID_SOCKS_HOST).build());
+    httpClient =
+      new ApacheHttpClient(
+        HttpConfig.newBuilder().setSocksProxyHost(INVALID_SOCKS_HOST).build()
+      );
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().build())
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().build())
+      .build();
     assertThatThrownBy(() -> httpClient.execute(request))
       .isExactlyInstanceOf(HttpRuntimeException.class)
       .hasMessageContaining(INVALID_SOCKS_HOST)
@@ -73,13 +78,17 @@ public class ApacheHttpClientTest {
 
   @Test
   public void itWorksWithHttps() {
-    httpClient = new ApacheHttpClient(HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).build());
+    httpClient =
+      new ApacheHttpClient(
+        HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).build()
+      );
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpsUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().build())
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpsUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().build())
+      .build();
     HttpResponse response = httpClient.execute(request);
 
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
@@ -87,13 +96,21 @@ public class ApacheHttpClientTest {
 
   @Test
   public void shouldFailIfInvalidSocksProxyIsConfiguredforHttps() {
-    httpClient = new ApacheHttpClient(HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).setSocksProxyHost(INVALID_SOCKS_HOST).build());
+    httpClient =
+      new ApacheHttpClient(
+        HttpConfig
+          .newBuilder()
+          .setSSLConfig(SSLConfig.acceptAll())
+          .setSocksProxyHost(INVALID_SOCKS_HOST)
+          .build()
+      );
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().build())
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().build())
+      .build();
     assertThatThrownBy(() -> httpClient.execute(request))
       .isExactlyInstanceOf(HttpRuntimeException.class)
       .hasMessageContaining(INVALID_SOCKS_HOST)
@@ -104,11 +121,12 @@ public class ApacheHttpClientTest {
   public void itRetriesServerErrors() {
     httpClient = new ApacheHttpClient(HttpConfig.newBuilder().setMaxRetries(1).build());
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().setStatusCode(500).build())
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().setStatusCode(500).build())
+      .build();
     HttpResponse response = httpClient.execute(request);
 
     assertThat(response).hasStatusCode(500).hasBody("").hasRetries(1);
@@ -118,12 +136,13 @@ public class ApacheHttpClientTest {
   public void itCompressesWithGzip() {
     httpClient = new ApacheHttpClient();
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().build())
-            .setCompression(Compression.GZIP)
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().build())
+      .setCompression(Compression.GZIP)
+      .build();
     HttpResponse response = httpClient.execute(request);
 
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0).wasGzipCompressed();
@@ -133,26 +152,32 @@ public class ApacheHttpClientTest {
   public void itCompressesWithSnappy() {
     httpClient = new ApacheHttpClient();
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().build())
-            .setCompression(Compression.SNAPPY)
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().build())
+      .setCompression(Compression.SNAPPY)
+      .build();
     HttpResponse response = httpClient.execute(request);
 
-    assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0).wasSnappyCompressed();
+    assertThat(response)
+      .hasStatusCode(200)
+      .hasBody("")
+      .hasRetries(0)
+      .wasSnappyCompressed();
   }
 
   @Test
   public void itReturnsCorrectResponseBody() {
     httpClient = new ApacheHttpClient();
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
+      .build();
     HttpResponse response = httpClient.execute(request);
 
     assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0);
@@ -162,39 +187,62 @@ public class ApacheHttpClientTest {
   public void itDecompressesWithGzip() {
     httpClient = new ApacheHttpClient();
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().setBody("test").setCompression(Compression.GZIP).build())
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(
+        ExpectedHttpResponse
+          .newBuilder()
+          .setBody("test")
+          .setCompression(Compression.GZIP)
+          .build()
+      )
+      .build();
     HttpResponse response = httpClient.execute(request);
 
-    assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0).isGzipCompressed();
+    assertThat(response)
+      .hasStatusCode(200)
+      .hasBody("test")
+      .hasRetries(0)
+      .isGzipCompressed();
   }
 
   @Test
   public void itDecompressesWithSnappy() {
     httpClient = new ApacheHttpClient();
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().setBody("test").setCompression(Compression.SNAPPY).build())
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(
+        ExpectedHttpResponse
+          .newBuilder()
+          .setBody("test")
+          .setCompression(Compression.SNAPPY)
+          .build()
+      )
+      .build();
     HttpResponse response = httpClient.execute(request);
 
-    assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0).isSnappyCompressed();
+    assertThat(response)
+      .hasStatusCode(200)
+      .hasBody("test")
+      .hasRetries(0)
+      .isSnappyCompressed();
   }
 
   @Test
   public void itSupportsDeleteWithBody() {
     httpClient = new ApacheHttpClient();
 
-    HttpRequest request = HttpRequest.newBuilder()
-        .setMethod(Method.DELETE)
-        .setUrl(TEST_SERVER.baseHttpUrl())
-        .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
-        .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.DELETE)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
+      .build();
     HttpResponse response = httpClient.execute(request);
 
     assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0);

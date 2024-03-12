@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.hubspot</groupId>
     <artifactId>basepom</artifactId>
-    <version>25.3</version>
+    <version>59.3</version>
   </parent>
 
   <artifactId>Horizon</artifactId>
@@ -27,6 +27,16 @@
     <dependencies>
       <dependency>
         <groupId>com.hubspot</groupId>
+        <artifactId>async-http-client-shaded</artifactId>
+        <version>2.12.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.hubspot</groupId>
+        <artifactId>HorizonApache</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.hubspot</groupId>
         <artifactId>HorizonCore</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -38,23 +48,13 @@
       </dependency>
       <dependency>
         <groupId>com.hubspot</groupId>
-        <artifactId>HorizonApache</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.hubspot</groupId>
         <artifactId>HorizonNing</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.hubspot</groupId>
-        <artifactId>async-http-client-shaded</artifactId>
-        <version>2.12.1.0</version>
-      </dependency>
-      <dependency>
         <groupId>org.xerial.snappy</groupId>
         <artifactId>snappy-java</artifactId>
-        <version>1.1.7.3</version>
+        <version>1.1.8.4</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -63,6 +63,16 @@
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -78,16 +88,6 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-util</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -1,19 +1,5 @@
 package com.hubspot.horizon.ning;
 
-import java.io.IOException;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-
-import org.asynchttpclient.shaded.AsyncHttpClientConfig;
-import org.asynchttpclient.shaded.DefaultAsyncHttpClient;
-import org.asynchttpclient.shaded.DefaultAsyncHttpClientConfig;
-import org.asynchttpclient.shaded.Request;
-import org.asynchttpclient.shaded.filter.ThrottleRequestFilter;
-import org.asynchttpclient.shaded.io.netty.channel.EventLoopGroup;
-import org.asynchttpclient.shaded.io.netty.channel.nio.NioEventLoopGroup;
-import org.asynchttpclient.shaded.io.netty.util.HashedWheelTimer;
-import org.asynchttpclient.shaded.io.netty.util.concurrent.DefaultThreadFactory;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -30,13 +16,28 @@ import com.hubspot.horizon.ning.internal.NingFuture;
 import com.hubspot.horizon.ning.internal.NingHttpRequestConverter;
 import com.hubspot.horizon.ning.internal.NingRetryHandler;
 import com.hubspot.horizon.ning.internal.NingSSLContext;
+import java.io.IOException;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import org.asynchttpclient.shaded.AsyncHttpClientConfig;
+import org.asynchttpclient.shaded.DefaultAsyncHttpClient;
+import org.asynchttpclient.shaded.DefaultAsyncHttpClientConfig;
+import org.asynchttpclient.shaded.Request;
+import org.asynchttpclient.shaded.filter.ThrottleRequestFilter;
+import org.asynchttpclient.shaded.io.netty.channel.EventLoopGroup;
+import org.asynchttpclient.shaded.io.netty.channel.nio.NioEventLoopGroup;
+import org.asynchttpclient.shaded.io.netty.util.HashedWheelTimer;
+import org.asynchttpclient.shaded.io.netty.util.concurrent.DefaultThreadFactory;
 import org.asynchttpclient.shaded.proxy.ProxyServer;
 import org.asynchttpclient.shaded.proxy.ProxyType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class NingAsyncHttpClient implements AsyncHttpClient {
-  private static final HashedWheelTimer TIMER = new HashedWheelTimer(newThreadFactory("NingAsyncHttpClient-Timer"));
+
+  private static final HashedWheelTimer TIMER = new HashedWheelTimer(
+    newThreadFactory("NingAsyncHttpClient-Timer")
+  );
   private static final Logger LOG = LoggerFactory.getLogger(NingAsyncHttpClient.class);
 
   private final org.asynchttpclient.shaded.AsyncHttpClient ningClient;
@@ -54,7 +55,8 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
 
     this.eventLoopGroup = newEventLoopGroup();
 
-    DefaultAsyncHttpClientConfig.Builder builder = new DefaultAsyncHttpClientConfig.Builder();
+    DefaultAsyncHttpClientConfig.Builder builder =
+      new DefaultAsyncHttpClientConfig.Builder();
 
     if (config.isSocksProxied()) {
       LOG.debug(
@@ -62,27 +64,32 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
         config.getSocksProxyHost().get(),
         config.getSocksProxyPort()
       );
-      ProxyServer proxyServer = new ProxyServer.Builder(config.getSocksProxyHost().get(), config.getSocksProxyPort()).setProxyType(ProxyType.SOCKS_V5).build();
+      ProxyServer proxyServer = new ProxyServer.Builder(
+        config.getSocksProxyHost().get(),
+        config.getSocksProxyPort()
+      )
+        .setProxyType(ProxyType.SOCKS_V5)
+        .build();
       builder.setProxyServer(proxyServer);
     }
 
     AsyncHttpClientConfig ningConfig = builder
-            .addRequestFilter(new ThrottleRequestFilter(config.getMaxConnections()))
-            .addRequestFilter(new AcceptEncodingRequestFilter())
-            .addRequestFilter(new DefaultHeadersRequestFilter(config))
-            .setMaxConnectionsPerHost(config.getMaxConnectionsPerHost())
-            .setConnectionTtl(config.getConnectionTtlMillis())
-            .setConnectTimeout(config.getConnectTimeoutMillis())
-            .setRequestTimeout(config.getRequestTimeoutMillis())
-            .setReadTimeout(config.getRequestTimeoutMillis())
-            .setMaxRedirects(config.getMaxRedirects())
-            .setFollowRedirect(config.isFollowRedirects())
-            .setSslContext(NingSSLContext.forConfig(config.getSSLConfig()))
-            .setUserAgent(config.getUserAgent())
-            .setEventLoopGroup(eventLoopGroup)
-            .setNettyTimer(TIMER)
-            .setMaxRequestRetry(0) // we handle retries ourselves
-            .build();
+      .addRequestFilter(new ThrottleRequestFilter(config.getMaxConnections()))
+      .addRequestFilter(new AcceptEncodingRequestFilter())
+      .addRequestFilter(new DefaultHeadersRequestFilter(config))
+      .setMaxConnectionsPerHost(config.getMaxConnectionsPerHost())
+      .setConnectionTtl(config.getConnectionTtlMillis())
+      .setConnectTimeout(config.getConnectTimeoutMillis())
+      .setRequestTimeout(config.getRequestTimeoutMillis())
+      .setReadTimeout(config.getRequestTimeoutMillis())
+      .setMaxRedirects(config.getMaxRedirects())
+      .setFollowRedirect(config.isFollowRedirects())
+      .setSslContext(NingSSLContext.forConfig(config.getSSLConfig()))
+      .setUserAgent(config.getUserAgent())
+      .setEventLoopGroup(eventLoopGroup)
+      .setNettyTimer(TIMER)
+      .setMaxRequestRetry(0) // we handle retries ourselves
+      .build();
 
     this.ningClient = new DefaultAsyncHttpClient(ningConfig);
     this.requestConverter = new NingHttpRequestConverter(config.getObjectMapper());
@@ -110,15 +117,26 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
     internalExecute(request, options, callback);
   }
 
-  private ListenableFuture<HttpResponse> internalExecute(HttpRequest request, Options options, Callback callback) {
+  private ListenableFuture<HttpResponse> internalExecute(
+    HttpRequest request,
+    Options options,
+    Callback callback
+  ) {
     Preconditions.checkNotNull(request);
     Preconditions.checkNotNull(options);
     Preconditions.checkNotNull(callback);
 
-    NingRetryHandler retryHandler = new NingRetryHandler(defaultOptions.mergeFrom(options));
+    NingRetryHandler retryHandler = new NingRetryHandler(
+      defaultOptions.mergeFrom(options)
+    );
     NingFuture future = new NingFuture(callback);
 
-    final NingCompletionHandler completionHandler = new NingCompletionHandler(request, future, retryHandler, mapper);
+    final NingCompletionHandler completionHandler = new NingCompletionHandler(
+      request,
+      future,
+      retryHandler,
+      mapper
+    );
     final Request ningRequest = requestConverter.convert(request);
     Runnable runnable = () -> {
       try {

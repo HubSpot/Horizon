@@ -13,6 +13,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
 
 public final class ApacheHttpRequestConverter {
+
   private final ObjectMapper mapper;
 
   public ApacheHttpRequestConverter(ObjectMapper mapper) {
@@ -42,7 +43,9 @@ public final class ApacheHttpRequestConverter {
         apacheRequest = new HttpHead(request.getUrl());
         break;
       default:
-        throw new IllegalArgumentException("Unrecognized request method: " + request.getMethod());
+        throw new IllegalArgumentException(
+          "Unrecognized request method: " + request.getMethod()
+        );
     }
 
     byte[] body = request.getBody(mapper);
