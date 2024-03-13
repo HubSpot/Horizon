@@ -4,18 +4,6 @@ import static com.hubspot.horizon.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadMXBean;
-import java.net.UnknownHostException;
-import java.util.concurrent.ExecutionException;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import com.hubspot.horizon.AsyncHttpClient;
 import com.hubspot.horizon.Compression;
 import com.hubspot.horizon.ExpectedHttpResponse;
@@ -26,8 +14,19 @@ import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.SSLConfig;
 import com.hubspot.horizon.TestServer;
 import com.hubspot.horizon.ning.NingAsyncHttpClient;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
+import java.net.UnknownHostException;
+import java.util.concurrent.ExecutionException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 
 public class NingAsyncHttpClientTest {
+
   private static final TestServer TEST_SERVER = new TestServer();
   private static final String INVALID_SOCKS_HOST = "invalidSocksHost";
 
@@ -52,11 +51,12 @@ public class NingAsyncHttpClientTest {
   public void itWorksWithHttp() throws Exception {
     httpClient = new NingAsyncHttpClient();
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().build())
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().build())
+      .build();
     HttpResponse response = httpClient.execute(request).get();
 
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
@@ -64,13 +64,17 @@ public class NingAsyncHttpClientTest {
 
   @Test
   public void shouldFailIfInvalidSocksProxyIsConfiguredForHttp() throws Exception {
-    httpClient = new NingAsyncHttpClient(HttpConfig.newBuilder().setSocksProxyHost(INVALID_SOCKS_HOST).build());
+    httpClient =
+      new NingAsyncHttpClient(
+        HttpConfig.newBuilder().setSocksProxyHost(INVALID_SOCKS_HOST).build()
+      );
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().build())
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().build())
+      .build();
     assertThatThrownBy(() -> httpClient.execute(request).get())
       .isExactlyInstanceOf(ExecutionException.class)
       .hasMessageContaining(INVALID_SOCKS_HOST)
@@ -80,13 +84,17 @@ public class NingAsyncHttpClientTest {
   @Test
   @Ignore
   public void itWorksWithHttps() throws Exception {
-    httpClient = new NingAsyncHttpClient(HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).build());
+    httpClient =
+      new NingAsyncHttpClient(
+        HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).build()
+      );
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpsUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().build())
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpsUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().build())
+      .build();
     HttpResponse response = httpClient.execute(request).get();
 
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0);
@@ -94,13 +102,21 @@ public class NingAsyncHttpClientTest {
 
   @Test
   public void shouldFailIfInvalidSocksProxyIsConfiguredForHttps() throws Exception {
-    httpClient = new NingAsyncHttpClient(HttpConfig.newBuilder().setSSLConfig(SSLConfig.acceptAll()).setSocksProxyHost(INVALID_SOCKS_HOST).build());
+    httpClient =
+      new NingAsyncHttpClient(
+        HttpConfig
+          .newBuilder()
+          .setSSLConfig(SSLConfig.acceptAll())
+          .setSocksProxyHost(INVALID_SOCKS_HOST)
+          .build()
+      );
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().build())
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().build())
+      .build();
     assertThatThrownBy(() -> httpClient.execute(request).get())
       .isExactlyInstanceOf(ExecutionException.class)
       .hasMessageContaining(INVALID_SOCKS_HOST)
@@ -109,13 +125,15 @@ public class NingAsyncHttpClientTest {
 
   @Test
   public void itRetriesServerErrors() throws Exception {
-    httpClient = new NingAsyncHttpClient(HttpConfig.newBuilder().setMaxRetries(1).build());
+    httpClient =
+      new NingAsyncHttpClient(HttpConfig.newBuilder().setMaxRetries(1).build());
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().setStatusCode(500).build())
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().setStatusCode(500).build())
+      .build();
     HttpResponse response = httpClient.execute(request).get();
 
     assertThat(response).hasStatusCode(500).hasBody("").hasRetries(1);
@@ -125,12 +143,13 @@ public class NingAsyncHttpClientTest {
   public void itCompressesWithGzip() throws Exception {
     httpClient = new NingAsyncHttpClient();
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().build())
-            .setCompression(Compression.GZIP)
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().build())
+      .setCompression(Compression.GZIP)
+      .build();
     HttpResponse response = httpClient.execute(request).get();
 
     assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0).wasGzipCompressed();
@@ -140,26 +159,32 @@ public class NingAsyncHttpClientTest {
   public void itCompressesWithSnappy() throws Exception {
     httpClient = new NingAsyncHttpClient();
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().build())
-            .setCompression(Compression.SNAPPY)
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().build())
+      .setCompression(Compression.SNAPPY)
+      .build();
     HttpResponse response = httpClient.execute(request).get();
 
-    assertThat(response).hasStatusCode(200).hasBody("").hasRetries(0).wasSnappyCompressed();
+    assertThat(response)
+      .hasStatusCode(200)
+      .hasBody("")
+      .hasRetries(0)
+      .wasSnappyCompressed();
   }
 
   @Test
   public void itReturnsCorrectResponseBody() throws Exception {
     httpClient = new NingAsyncHttpClient();
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
+      .build();
     HttpResponse response = httpClient.execute(request).get();
 
     assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0);
@@ -169,39 +194,62 @@ public class NingAsyncHttpClientTest {
   public void itDecompressesWithGzip() throws Exception {
     httpClient = new NingAsyncHttpClient();
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().setBody("test").setCompression(Compression.GZIP).build())
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(
+        ExpectedHttpResponse
+          .newBuilder()
+          .setBody("test")
+          .setCompression(Compression.GZIP)
+          .build()
+      )
+      .build();
     HttpResponse response = httpClient.execute(request).get();
 
-    assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0).isGzipCompressed();
+    assertThat(response)
+      .hasStatusCode(200)
+      .hasBody("test")
+      .hasRetries(0)
+      .isGzipCompressed();
   }
 
   @Test
   public void itDecompressesWithSnappy() throws Exception {
     httpClient = new NingAsyncHttpClient();
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .setMethod(Method.POST)
-            .setUrl(TEST_SERVER.baseHttpUrl())
-            .setBody(ExpectedHttpResponse.newBuilder().setBody("test").setCompression(Compression.SNAPPY).build())
-            .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(
+        ExpectedHttpResponse
+          .newBuilder()
+          .setBody("test")
+          .setCompression(Compression.SNAPPY)
+          .build()
+      )
+      .build();
     HttpResponse response = httpClient.execute(request).get();
 
-    assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0).isSnappyCompressed();
+    assertThat(response)
+      .hasStatusCode(200)
+      .hasBody("test")
+      .hasRetries(0)
+      .isSnappyCompressed();
   }
 
   @Test
   public void itSupportsDeleteWithBody() throws Exception {
     httpClient = new NingAsyncHttpClient();
 
-    HttpRequest request = HttpRequest.newBuilder()
-        .setMethod(Method.DELETE)
-        .setUrl(TEST_SERVER.baseHttpUrl())
-        .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
-        .build();
+    HttpRequest request = HttpRequest
+      .newBuilder()
+      .setMethod(Method.DELETE)
+      .setUrl(TEST_SERVER.baseHttpUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().setBody("test").build())
+      .build();
     HttpResponse response = httpClient.execute(request).get();
 
     assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0);

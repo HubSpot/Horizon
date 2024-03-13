@@ -2,14 +2,14 @@ package com.hubspot.horizon;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import javax.annotation.Nullable;
 
 public class Headers implements Iterable<Header> {
+
   private final List<Header> headerList;
   private final LinkedHashMap<String, List<String>> headerMap;
 

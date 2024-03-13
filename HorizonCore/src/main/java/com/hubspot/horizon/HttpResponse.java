@@ -3,7 +3,6 @@ package com.hubspot.horizon;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
-
 import java.io.InputStream;
 
 public interface HttpResponse {

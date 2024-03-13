@@ -20,6 +20,15 @@ import com.hubspot.horizon.apache.internal.LenientRedirectStrategy;
 import com.hubspot.horizon.apache.internal.ProxiedPlainConnectionSocketFactory;
 import com.hubspot.horizon.apache.internal.ProxiedSSLSocketFactory;
 import com.hubspot.horizon.apache.internal.SnappyContentEncodingResponseInterceptor;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nullable;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
@@ -37,17 +46,8 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.InetSocketAddress;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 public class ApacheHttpClient implements HttpClient {
+
   private static final Logger LOG = LoggerFactory.getLogger(ApacheHttpClient.class);
 
   private final CloseableHttpClient apacheClient;
@@ -67,8 +67,13 @@ public class ApacheHttpClient implements HttpClient {
 
     builder.setConnectionManager(createConnectionManager(config));
     builder.setRedirectStrategy(new LenientRedirectStrategy());
-    builder.setKeepAliveStrategy(new KeepAliveWithDefaultStrategy(config.getDefaultKeepAliveMillis()));
-    builder.setConnectionTimeToLive(config.getConnectionTtlMillis(), TimeUnit.MILLISECONDS);
+    builder.setKeepAliveStrategy(
+      new KeepAliveWithDefaultStrategy(config.getDefaultKeepAliveMillis())
+    );
+    builder.setConnectionTimeToLive(
+      config.getConnectionTtlMillis(),
+      TimeUnit.MILLISECONDS
+    );
     builder.addInterceptorFirst(new DefaultHeadersRequestInterceptor(config));
     builder.addInterceptorFirst(new SnappyContentEncodingResponseInterceptor());
     builder.setDefaultRequestConfig(createRequestConfig(config));
@@ -88,14 +93,17 @@ public class ApacheHttpClient implements HttpClient {
 
   private HttpClientConnectionManager createConnectionManager(HttpConfig config) {
     Registry<ConnectionSocketFactory> registry = createSocketFactoryRegistry(config);
-    PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(registry);
+    PoolingHttpClientConnectionManager connectionManager =
+      new PoolingHttpClientConnectionManager(registry);
     connectionManager.setMaxTotal(config.getMaxConnections());
     connectionManager.setDefaultMaxPerRoute(config.getMaxConnectionsPerHost());
 
     return connectionManager;
   }
 
-  private Registry<ConnectionSocketFactory> createSocketFactoryRegistry(HttpConfig config) {
+  private Registry<ConnectionSocketFactory> createSocketFactoryRegistry(
+    HttpConfig config
+  ) {
     RegistryBuilder<ConnectionSocketFactory> builder = RegistryBuilder.create();
 
     if (config.isSocksProxied()) {
@@ -110,14 +118,15 @@ public class ApacheHttpClient implements HttpClient {
   }
 
   private RequestConfig createRequestConfig(HttpConfig config) {
-    return RequestConfig.custom()
-            .setConnectionRequestTimeout(config.getConnectTimeoutMillis())
-            .setConnectTimeout(config.getConnectTimeoutMillis())
-            .setSocketTimeout(config.getRequestTimeoutMillis())
-            .setRedirectsEnabled(config.isFollowRedirects())
-            .setMaxRedirects(config.getMaxRedirects())
-            .setRelativeRedirectsAllowed(config.isRejectRelativeRedirects())
-            .build();
+    return RequestConfig
+      .custom()
+      .setConnectionRequestTimeout(config.getConnectTimeoutMillis())
+      .setConnectTimeout(config.getConnectTimeoutMillis())
+      .setSocketTimeout(config.getRequestTimeoutMillis())
+      .setRedirectsEnabled(config.isFollowRedirects())
+      .setMaxRedirects(config.getMaxRedirects())
+      .setRelativeRedirectsAllowed(config.isRejectRelativeRedirects())
+      .build();
   }
 
   private SocketConfig createSocketConfig(HttpConfig config) {
@@ -130,7 +139,8 @@ public class ApacheHttpClient implements HttpClient {
   }
 
   @Override
-  public HttpResponse execute(HttpRequest request, Options options) throws HttpRuntimeException {
+  public HttpResponse execute(HttpRequest request, Options options)
+    throws HttpRuntimeException {
     Preconditions.checkNotNull(request);
     Preconditions.checkNotNull(options);
 
@@ -142,7 +152,11 @@ public class ApacheHttpClient implements HttpClient {
     }
   }
 
-  private HttpResponse executeWithRetries(HttpRequest request, Options options, int retries) throws IOException {
+  private HttpResponse executeWithRetries(
+    HttpRequest request,
+    Options options,
+    int retries
+  ) throws IOException {
     int maxRetries = options.getMaxRetries();
     RetryStrategy retryStrategy = options.getRetryStrategy();
 
@@ -155,7 +169,10 @@ public class ApacheHttpClient implements HttpClient {
       final HttpResponse response;
       try {
         if (config.isSocksProxied()) {
-          InetSocketAddress socksaddr = new InetSocketAddress(config.getSocksProxyHost().get(), config.getSocksProxyPort());
+          InetSocketAddress socksaddr = new InetSocketAddress(
+            config.getSocksProxyHost().get(),
+            config.getSocksProxyPort()
+          );
           HttpClientContext context = HttpClientContext.create();
           context.setAttribute("socks.address", socksaddr);
           LOG.debug(
@@ -167,14 +184,23 @@ public class ApacheHttpClient implements HttpClient {
         } else {
           apacheResponse = apacheClient.execute(apacheRequest);
         }
-        response = CachedHttpResponse.from(new ApacheHttpResponse(request, apacheResponse, config.getObjectMapper()));
+        response =
+          CachedHttpResponse.from(
+            new ApacheHttpResponse(request, apacheResponse, config.getObjectMapper())
+          );
       } finally {
         // once this is done the timeout can be canceled
         timeoutTask.cancel();
       }
 
       if (retries < maxRetries && retryStrategy.shouldRetry(request, response)) {
-        LOG.warn(String.format("Going to retry failed request to '%s' (Status: %d)", request.getUrl(), response.getStatusCode()));
+        LOG.warn(
+          String.format(
+            "Going to retry failed request to '%s' (Status: %d)",
+            request.getUrl(),
+            response.getStatusCode()
+          )
+        );
       } else {
         return response;
       }
@@ -183,11 +209,19 @@ public class ApacheHttpClient implements HttpClient {
     } catch (IOException e) {
       if (timedOut.get()) {
         close(apacheResponse);
-        e = new IOException(new TimeoutException(String.format("Request to '%s' timed out", request.getUrl())));
+        e =
+          new IOException(
+            new TimeoutException(
+              String.format("Request to '%s' timed out", request.getUrl())
+            )
+          );
       }
 
       if (retries < maxRetries && retryStrategy.shouldRetry(request, e)) {
-        LOG.warn(String.format("Going to retry failed request to '%s'", request.getUrl()), e);
+        LOG.warn(
+          String.format("Going to retry failed request to '%s'", request.getUrl()),
+          e
+        );
       } else {
         throw e;
       }
@@ -196,7 +230,8 @@ public class ApacheHttpClient implements HttpClient {
     return backoffAndRetry(request, options, retries + 1);
   }
 
-  private HttpResponse backoffAndRetry(HttpRequest request, Options options, int retries) throws IOException {
+  private HttpResponse backoffAndRetry(HttpRequest request, Options options, int retries)
+    throws IOException {
     try {
       Thread.sleep(RetryHelper.computeBackoff(options, retries));
     } catch (InterruptedException e) {
@@ -207,10 +242,12 @@ public class ApacheHttpClient implements HttpClient {
     return executeWithRetries(request, options, retries);
   }
 
-  private TimerTask setupTimeoutTask(final HttpUriRequest request, final AtomicBoolean timedOut) {
+  private TimerTask setupTimeoutTask(
+    final HttpUriRequest request,
+    final AtomicBoolean timedOut
+  ) {
     int delay = config.getConnectTimeoutMillis() + config.getRequestTimeoutMillis();
     TimerTask timeoutTask = new TimerTask() {
-
       @Override
       public void run() {
         timedOut.set(true);

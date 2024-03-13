@@ -1,8 +1,5 @@
 package com.hubspot.horizon.ning;
 
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-
 import com.google.common.base.Preconditions;
 import com.hubspot.horizon.HttpClient;
 import com.hubspot.horizon.HttpConfig;
@@ -10,8 +7,11 @@ import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpRequest.Options;
 import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.HttpRuntimeException;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 public class NingHttpClient implements HttpClient {
+
   private final NingAsyncHttpClient delegate;
 
   public NingHttpClient() {
@@ -28,7 +28,8 @@ public class NingHttpClient implements HttpClient {
   }
 
   @Override
-  public HttpResponse execute(HttpRequest request, Options options) throws HttpRuntimeException {
+  public HttpResponse execute(HttpRequest request, Options options)
+    throws HttpRuntimeException {
     Preconditions.checkNotNull(request);
     Preconditions.checkNotNull(options);
 
