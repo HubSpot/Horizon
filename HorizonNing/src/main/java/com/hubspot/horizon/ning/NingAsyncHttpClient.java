@@ -17,13 +17,18 @@ import com.hubspot.horizon.ning.internal.NingHttpRequestConverter;
 import com.hubspot.horizon.ning.internal.NingRetryHandler;
 import com.hubspot.horizon.ning.internal.NingSSLContext;
 import java.io.IOException;
+import java.util.List;
+import java.util.ServiceLoader;
+import java.util.ServiceLoader.Provider;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.asynchttpclient.shaded.AsyncHttpClientConfig;
 import org.asynchttpclient.shaded.DefaultAsyncHttpClient;
 import org.asynchttpclient.shaded.DefaultAsyncHttpClientConfig;
 import org.asynchttpclient.shaded.Request;
 import org.asynchttpclient.shaded.filter.ThrottleRequestFilter;
+import org.asynchttpclient.shaded.io.netty.buffer.ByteBufAllocator;
 import org.asynchttpclient.shaded.io.netty.channel.EventLoopGroup;
 import org.asynchttpclient.shaded.io.netty.channel.nio.NioEventLoopGroup;
 import org.asynchttpclient.shaded.io.netty.util.HashedWheelTimer;
@@ -71,6 +76,15 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
         .setProxyType(ProxyType.SOCKS_V5)
         .build();
       builder.setProxyServer(proxyServer);
+    }
+
+    List<Provider<ByteBufAllocator>> serviceLoader = ServiceLoader
+      .load(ByteBufAllocator.class)
+      .stream()
+      .collect(Collectors.toList());
+
+    if (!serviceLoader.isEmpty()) {
+      builder.setAllocator(serviceLoader.get(0).get());
     }
 
     AsyncHttpClientConfig ningConfig = builder
