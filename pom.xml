@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>Horizon</artifactId>
-  <version>0.3.1-SNAPSHOT</version>
+  <version>0.3.2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <description>Simple interfaces for making HTTP requests</description>
 
