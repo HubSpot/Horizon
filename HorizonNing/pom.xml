@@ -41,5 +41,10 @@
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
-  </dependencies>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>test</scope>
+    </dependency>
+</dependencies>
 </project>
