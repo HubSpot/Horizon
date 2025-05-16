@@ -27,6 +27,7 @@ public class HttpConfig {
   private final SSLConfig sslConfig;
   private final Optional<String> socksProxyHost;
   private final int socksProxyPort;
+  private final Optional<DnsResolutionPostProcessor> dnsResolutionPostProcessor;
 
   private HttpConfig(
     int maxConnections,
@@ -46,7 +47,8 @@ public class HttpConfig {
     ObjectMapper mapper,
     SSLConfig sslConfig,
     Optional<String> socksProxyHost,
-    int socksProxyPort
+    int socksProxyPort,
+    Optional<DnsResolutionPostProcessor> dnsResolutionPostProcessor
   ) {
     this.maxConnections = maxConnections;
     this.maxConnectionsPerHost = maxConnectionsPerHost;
@@ -66,6 +68,7 @@ public class HttpConfig {
     this.sslConfig = sslConfig;
     this.socksProxyHost = socksProxyHost;
     this.socksProxyPort = socksProxyPort;
+    this.dnsResolutionPostProcessor = dnsResolutionPostProcessor;
   }
 
   public static Builder newBuilder() {
@@ -132,6 +135,10 @@ public class HttpConfig {
     return socksProxyPort;
   }
 
+  public Optional<DnsResolutionPostProcessor> getDnsResolutionPostProcessor() {
+    return dnsResolutionPostProcessor;
+  }
+
   public Options getOptions() {
     Options options = new Options();
 
@@ -163,6 +170,8 @@ public class HttpConfig {
     private SSLConfig sslConfig = SSLConfig.standard();
     private Optional<String> socksProxyHost = Optional.empty();
     private int socksProxyPort = 1080;
+    private Optional<DnsResolutionPostProcessor> dnsResolutionPostProcessor =
+      Optional.empty();
 
     private Builder() {}
 
@@ -256,6 +265,13 @@ public class HttpConfig {
       return this;
     }
 
+    public Builder setDnsResolutionPostProcessor(
+      DnsResolutionPostProcessor dnsResolutionPostProcessor
+    ) {
+      this.dnsResolutionPostProcessor = Optional.of(dnsResolutionPostProcessor);
+      return this;
+    }
+
     public HttpConfig build() {
       return new HttpConfig(
         maxConnections,
@@ -275,7 +291,8 @@ public class HttpConfig {
         mapper,
         sslConfig,
         socksProxyHost,
-        socksProxyPort
+        socksProxyPort,
+        dnsResolutionPostProcessor
       );
     }
   }
