@@ -14,6 +14,7 @@ import com.hubspot.horizon.apache.internal.ApacheHttpRequestConverter;
 import com.hubspot.horizon.apache.internal.ApacheHttpResponse;
 import com.hubspot.horizon.apache.internal.ApacheSSLSocketFactory;
 import com.hubspot.horizon.apache.internal.CachedHttpResponse;
+import com.hubspot.horizon.apache.internal.CustomApacheDnsResolver;
 import com.hubspot.horizon.apache.internal.DefaultHeadersRequestInterceptor;
 import com.hubspot.horizon.apache.internal.KeepAliveWithDefaultStrategy;
 import com.hubspot.horizon.apache.internal.LenientRedirectStrategy;
@@ -37,6 +38,7 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.config.SocketConfig;
+import org.apache.http.conn.DnsResolver;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
@@ -93,8 +95,12 @@ public class ApacheHttpClient implements HttpClient {
 
   private HttpClientConnectionManager createConnectionManager(HttpConfig config) {
     Registry<ConnectionSocketFactory> registry = createSocketFactoryRegistry(config);
+    DnsResolver dnsResolver = null;
+    if (config.getCustomDnsResolver().isPresent()) {
+      dnsResolver = new CustomApacheDnsResolver(config.getCustomDnsResolver().get());
+    }
     PoolingHttpClientConnectionManager connectionManager =
-      new PoolingHttpClientConnectionManager(registry);
+      new PoolingHttpClientConnectionManager(registry, null, dnsResolver);
     connectionManager.setMaxTotal(config.getMaxConnections());
     connectionManager.setDefaultMaxPerRoute(config.getMaxConnectionsPerHost());
 

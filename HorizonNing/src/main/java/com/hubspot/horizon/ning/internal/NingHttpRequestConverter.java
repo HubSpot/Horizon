@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
 import com.google.common.base.Splitter.MapSplitter;
 import com.google.common.net.HttpHeaders;
-import com.hubspot.horizon.DnsResolutionPostProcessor;
+import com.hubspot.horizon.CustomDnsResolver;
 import com.hubspot.horizon.Header;
 import com.hubspot.horizon.HttpRequest;
 import java.util.Map;
@@ -29,15 +29,15 @@ public final class NingHttpRequestConverter {
 
   public Request convert(
     HttpRequest request,
-    Optional<DnsResolutionPostProcessor> dnsResolutionPostProcessor
+    Optional<CustomDnsResolver> customDnsResolver
   ) {
     RequestBuilder ningRequest = new RequestBuilder(request.getMethod().name());
     ningRequest.setUrl(request.getUrl().toString());
-    if (dnsResolutionPostProcessor.isPresent()) {
+    if (customDnsResolver.isPresent()) {
       ningRequest.setNameResolver(
-        new NameResolverWithPostProcessing(
+        new CustomNingNameResolver(
           ImmediateEventExecutor.INSTANCE,
-          dnsResolutionPostProcessor.get()
+          customDnsResolver.get()
         )
       );
     }
