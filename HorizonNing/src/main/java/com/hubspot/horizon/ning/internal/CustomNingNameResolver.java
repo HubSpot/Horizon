@@ -24,12 +24,21 @@ public class CustomNingNameResolver extends InetNameResolver {
   @Override
   protected void doResolve(String inetHost, Promise<InetAddress> promise) {
     try {
-      InetAddress[] addresses = customDnsResolver.resolve(inetHost);
-      if (addresses.length == 0) {
-        promise.setFailure(new UnknownHostException());
-        return;
-      }
-      promise.setSuccess(addresses[0]);
+      customDnsResolver
+        .resolve(inetHost)
+        .thenAccept(addresses -> {
+          if (addresses == null || addresses.length == 0) {
+            promise.setFailure(
+              new UnknownHostException("No addresses found for host: " + inetHost)
+            );
+          } else {
+            promise.setSuccess(addresses[0]);
+          }
+        })
+        .exceptionally(throwable -> {
+          promise.setFailure(throwable);
+          return null;
+        });
     } catch (UnknownHostException e) {
       promise.setFailure(e);
     }
@@ -38,7 +47,15 @@ public class CustomNingNameResolver extends InetNameResolver {
   @Override
   protected void doResolveAll(String inetHost, Promise<List<InetAddress>> promise) {
     try {
-      promise.setSuccess(Arrays.asList(customDnsResolver.resolve(inetHost)));
+      customDnsResolver
+        .resolve(inetHost)
+        .thenAccept(addresses -> {
+          promise.setSuccess(Arrays.asList(addresses));
+        })
+        .exceptionally(throwable -> {
+          promise.setFailure(throwable);
+          return null;
+        });
     } catch (UnknownHostException e) {
       promise.setFailure(e);
     }

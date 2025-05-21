@@ -15,6 +15,6 @@ public class CustomApacheDnsResolver implements DnsResolver {
 
   @Override
   public InetAddress[] resolve(String host) throws UnknownHostException {
-    return customDnsResolver.resolve(host);
+    return customDnsResolver.resolve(host).join();
   }
 }
