@@ -4,12 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
 import com.google.common.base.Splitter.MapSplitter;
 import com.google.common.net.HttpHeaders;
+import com.hubspot.horizon.DnsResolver;
 import com.hubspot.horizon.Header;
 import com.hubspot.horizon.HttpRequest;
 import java.util.Map;
+import java.util.Optional;
 import org.asynchttpclient.shaded.Request;
 import org.asynchttpclient.shaded.RequestBuilder;
 import org.asynchttpclient.shaded.io.netty.handler.codec.http.cookie.DefaultCookie;
+import org.asynchttpclient.shaded.io.netty.util.concurrent.ImmediateEventExecutor;
 
 public final class NingHttpRequestConverter {
 
@@ -24,9 +27,14 @@ public final class NingHttpRequestConverter {
     this.mapper = mapper;
   }
 
-  public Request convert(HttpRequest request) {
+  public Request convert(HttpRequest request, Optional<DnsResolver> dnsResolver) {
     RequestBuilder ningRequest = new RequestBuilder(request.getMethod().name());
     ningRequest.setUrl(request.getUrl().toString());
+    if (dnsResolver.isPresent()) {
+      ningRequest.setNameResolver(
+        new CustomNingNameResolver(ImmediateEventExecutor.INSTANCE, dnsResolver.get())
+      );
+    }
 
     byte[] body = request.getBody(mapper);
     if (body != null) {
