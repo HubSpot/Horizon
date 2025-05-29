@@ -27,7 +27,7 @@ public class HttpConfig {
   private final SSLConfig sslConfig;
   private final Optional<String> socksProxyHost;
   private final int socksProxyPort;
-  private final Optional<CustomDnsResolver> customDnsResolver;
+  private final Optional<DnsResolver> dnsResolver;
 
   private HttpConfig(
     int maxConnections,
@@ -48,7 +48,7 @@ public class HttpConfig {
     SSLConfig sslConfig,
     Optional<String> socksProxyHost,
     int socksProxyPort,
-    Optional<CustomDnsResolver> customDnsResolver
+    Optional<DnsResolver> dnsResolver
   ) {
     this.maxConnections = maxConnections;
     this.maxConnectionsPerHost = maxConnectionsPerHost;
@@ -68,7 +68,7 @@ public class HttpConfig {
     this.sslConfig = sslConfig;
     this.socksProxyHost = socksProxyHost;
     this.socksProxyPort = socksProxyPort;
-    this.customDnsResolver = customDnsResolver;
+    this.dnsResolver = dnsResolver;
   }
 
   public static Builder newBuilder() {
@@ -135,8 +135,8 @@ public class HttpConfig {
     return socksProxyPort;
   }
 
-  public Optional<CustomDnsResolver> getCustomDnsResolver() {
-    return customDnsResolver;
+  public Optional<DnsResolver> getDnsResolver() {
+    return dnsResolver;
   }
 
   public Options getOptions() {
@@ -170,7 +170,7 @@ public class HttpConfig {
     private SSLConfig sslConfig = SSLConfig.standard();
     private Optional<String> socksProxyHost = Optional.empty();
     private int socksProxyPort = 1080;
-    private Optional<CustomDnsResolver> customDnsResolver = Optional.empty();
+    private Optional<DnsResolver> dnsResolver = Optional.empty();
 
     private Builder() {}
 
@@ -264,8 +264,8 @@ public class HttpConfig {
       return this;
     }
 
-    public Builder setCustomDnsResolver(CustomDnsResolver customDnsResolver) {
-      this.customDnsResolver = Optional.of(customDnsResolver);
+    public Builder setDnsResolver(DnsResolver dnsResolver) {
+      this.dnsResolver = Optional.of(dnsResolver);
       return this;
     }
 
@@ -289,7 +289,7 @@ public class HttpConfig {
         sslConfig,
         socksProxyHost,
         socksProxyPort,
-        customDnsResolver
+        dnsResolver
       );
     }
   }

@@ -96,8 +96,8 @@ public class ApacheHttpClient implements HttpClient {
   private HttpClientConnectionManager createConnectionManager(HttpConfig config) {
     Registry<ConnectionSocketFactory> registry = createSocketFactoryRegistry(config);
     DnsResolver dnsResolver = null;
-    if (config.getCustomDnsResolver().isPresent()) {
-      dnsResolver = new CustomApacheDnsResolver(config.getCustomDnsResolver().get());
+    if (config.getDnsResolver().isPresent()) {
+      dnsResolver = new CustomApacheDnsResolver(config.getDnsResolver().get());
     }
     PoolingHttpClientConnectionManager connectionManager =
       new PoolingHttpClientConnectionManager(registry, null, dnsResolver);

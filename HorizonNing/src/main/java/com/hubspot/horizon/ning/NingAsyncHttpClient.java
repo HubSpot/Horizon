@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.hubspot.horizon.AsyncHttpClient;
-import com.hubspot.horizon.CustomDnsResolver;
+import com.hubspot.horizon.DnsResolver;
 import com.hubspot.horizon.HttpConfig;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpRequest.Options;
@@ -47,7 +47,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
   private final Options defaultOptions;
   private final ObjectMapper mapper;
   private final EventLoopGroup eventLoopGroup;
-  private final Optional<CustomDnsResolver> customDnsResolver;
+  private final Optional<DnsResolver> dnsResolver;
 
   public NingAsyncHttpClient() {
     this(HttpConfig.newBuilder().build());
@@ -57,7 +57,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
     Preconditions.checkNotNull(config);
 
     this.eventLoopGroup = newEventLoopGroup();
-    this.customDnsResolver = config.getCustomDnsResolver();
+    this.dnsResolver = config.getDnsResolver();
 
     DefaultAsyncHttpClientConfig.Builder builder =
       new DefaultAsyncHttpClientConfig.Builder();
@@ -141,7 +141,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
       retryHandler,
       mapper
     );
-    final Request ningRequest = requestConverter.convert(request, customDnsResolver);
+    final Request ningRequest = requestConverter.convert(request, dnsResolver);
     Runnable runnable = () -> {
       try {
         ningClient.executeRequest(ningRequest, completionHandler);

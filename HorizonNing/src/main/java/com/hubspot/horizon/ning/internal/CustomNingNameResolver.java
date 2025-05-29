@@ -1,6 +1,6 @@
 package com.hubspot.horizon.ning.internal;
 
-import com.hubspot.horizon.CustomDnsResolver;
+import com.hubspot.horizon.DnsResolver;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -11,20 +11,17 @@ import org.asynchttpclient.shaded.io.netty.util.concurrent.Promise;
 
 public class CustomNingNameResolver extends InetNameResolver {
 
-  private final CustomDnsResolver customDnsResolver;
+  private final DnsResolver dnsResolver;
 
-  public CustomNingNameResolver(
-    EventExecutor executor,
-    CustomDnsResolver customDnsResolver
-  ) {
+  public CustomNingNameResolver(EventExecutor executor, DnsResolver dnsResolver) {
     super(executor);
-    this.customDnsResolver = customDnsResolver;
+    this.dnsResolver = dnsResolver;
   }
 
   @Override
   protected void doResolve(String inetHost, Promise<InetAddress> promise) {
     try {
-      customDnsResolver
+      dnsResolver
         .resolve(inetHost)
         .thenAccept(addresses -> {
           if (addresses == null || addresses.length == 0) {
@@ -47,7 +44,7 @@ public class CustomNingNameResolver extends InetNameResolver {
   @Override
   protected void doResolveAll(String inetHost, Promise<List<InetAddress>> promise) {
     try {
-      customDnsResolver
+      dnsResolver
         .resolve(inetHost)
         .thenAccept(addresses -> {
           promise.setSuccess(Arrays.asList(addresses));
