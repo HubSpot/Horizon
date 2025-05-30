@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>Horizon</artifactId>
-  <version>0.3.3</version>
+  <version>0.3.4-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>${project.groupId}:${project.artifactId}</name>
@@ -105,6 +105,6 @@
     <connection>scm:git:git@github.com:HubSpot/Horizon.git</connection>
     <developerConnection>scm:git:git@github.com:HubSpot/Horizon.git</developerConnection>
     <url>git@github.com:HubSpot/Horizon.git</url>
-    <tag>Horizon-0.3.3</tag>
+    <tag>HEAD</tag>
   </scm>
 </project>
