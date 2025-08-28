@@ -7,12 +7,12 @@ import com.google.common.net.HttpHeaders;
 import com.hubspot.horizon.DnsResolver;
 import com.hubspot.horizon.Header;
 import com.hubspot.horizon.HttpRequest;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
+import io.netty.util.concurrent.ImmediateEventExecutor;
 import java.util.Map;
 import java.util.Optional;
-import org.asynchttpclient.shaded.Request;
-import org.asynchttpclient.shaded.RequestBuilder;
-import org.asynchttpclient.shaded.io.netty.handler.codec.http.cookie.DefaultCookie;
-import org.asynchttpclient.shaded.io.netty.util.concurrent.ImmediateEventExecutor;
+import org.asynchttpclient.Request;
+import org.asynchttpclient.RequestBuilder;
 
 public final class NingHttpRequestConverter {
 

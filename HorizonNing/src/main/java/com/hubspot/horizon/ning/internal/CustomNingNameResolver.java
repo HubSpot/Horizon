@@ -1,13 +1,13 @@
 package com.hubspot.horizon.ning.internal;
 
 import com.hubspot.horizon.DnsResolver;
+import io.netty.resolver.InetNameResolver;
+import io.netty.util.concurrent.EventExecutor;
+import io.netty.util.concurrent.Promise;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
-import org.asynchttpclient.shaded.io.netty.resolver.InetNameResolver;
-import org.asynchttpclient.shaded.io.netty.util.concurrent.EventExecutor;
-import org.asynchttpclient.shaded.io.netty.util.concurrent.Promise;
 
 public class CustomNingNameResolver extends InetNameResolver {
 

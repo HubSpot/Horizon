@@ -17,21 +17,22 @@ import com.hubspot.horizon.ning.internal.NingFuture;
 import com.hubspot.horizon.ning.internal.NingHttpRequestConverter;
 import com.hubspot.horizon.ning.internal.NingRetryHandler;
 import com.hubspot.horizon.ning.internal.NingSSLContext;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.util.HashedWheelTimer;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import org.asynchttpclient.shaded.AsyncHttpClientConfig;
-import org.asynchttpclient.shaded.DefaultAsyncHttpClient;
-import org.asynchttpclient.shaded.DefaultAsyncHttpClientConfig;
-import org.asynchttpclient.shaded.Request;
-import org.asynchttpclient.shaded.filter.ThrottleRequestFilter;
-import org.asynchttpclient.shaded.io.netty.channel.EventLoopGroup;
-import org.asynchttpclient.shaded.io.netty.channel.nio.NioEventLoopGroup;
-import org.asynchttpclient.shaded.io.netty.util.HashedWheelTimer;
-import org.asynchttpclient.shaded.io.netty.util.concurrent.DefaultThreadFactory;
-import org.asynchttpclient.shaded.proxy.ProxyServer;
-import org.asynchttpclient.shaded.proxy.ProxyType;
+import org.asynchttpclient.AsyncHttpClientConfig;
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
+import org.asynchttpclient.Request;
+import org.asynchttpclient.filter.ThrottleRequestFilter;
+import org.asynchttpclient.proxy.ProxyServer;
+import org.asynchttpclient.proxy.ProxyType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
   );
   private static final Logger LOG = LoggerFactory.getLogger(NingAsyncHttpClient.class);
 
-  private final org.asynchttpclient.shaded.AsyncHttpClient ningClient;
+  private final org.asynchttpclient.AsyncHttpClient ningClient;
   private final NingHttpRequestConverter requestConverter;
   private final Options defaultOptions;
   private final ObjectMapper mapper;
@@ -82,10 +83,10 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
       .addRequestFilter(new AcceptEncodingRequestFilter())
       .addRequestFilter(new DefaultHeadersRequestFilter(config))
       .setMaxConnectionsPerHost(config.getMaxConnectionsPerHost())
-      .setConnectionTtl(config.getConnectionTtlMillis())
-      .setConnectTimeout(config.getConnectTimeoutMillis())
-      .setRequestTimeout(config.getRequestTimeoutMillis())
-      .setReadTimeout(config.getRequestTimeoutMillis())
+      .setConnectionTtl(Duration.ofMillis(config.getConnectionTtlMillis()))
+      .setConnectTimeout(Duration.ofMillis(config.getConnectTimeoutMillis()))
+      .setRequestTimeout(Duration.ofMillis(config.getRequestTimeoutMillis()))
+      .setReadTimeout(Duration.ofMillis(config.getRequestTimeoutMillis()))
       .setMaxRedirects(config.getMaxRedirects())
       .setFollowRedirect(config.isFollowRedirects())
       .setSslContext(NingSSLContext.forConfig(config.getSSLConfig()))
@@ -93,6 +94,8 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
       .setEventLoopGroup(eventLoopGroup)
       .setNettyTimer(TIMER)
       .setMaxRequestRetry(0) // we handle retries ourselves
+      // auto decompression uses snappy framed compression https://github.com/xerial/snappy-java?tab=readme-ov-file#data-format-compatibility-matrix
+      .setEnableAutomaticDecompression(false)
       .build();
 
     this.ningClient = new DefaultAsyncHttpClient(ningConfig);

@@ -2,9 +2,9 @@ package com.hubspot.horizon.ning.internal;
 
 import com.hubspot.horizon.HorizonHeaders;
 import com.hubspot.horizon.HttpConfig;
-import org.asynchttpclient.shaded.filter.FilterContext;
-import org.asynchttpclient.shaded.filter.RequestFilter;
-import org.asynchttpclient.shaded.io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders;
+import org.asynchttpclient.filter.FilterContext;
+import org.asynchttpclient.filter.RequestFilter;
 
 public class DefaultHeadersRequestFilter implements RequestFilter {
 
