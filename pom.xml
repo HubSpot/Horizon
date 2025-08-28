@@ -5,11 +5,11 @@
   <parent>
     <groupId>com.hubspot</groupId>
     <artifactId>basepom</artifactId>
-    <version>63.4</version>
+    <version>63.6</version>
   </parent>
 
   <artifactId>Horizon</artifactId>
-  <version>0.3.4-SNAPSHOT</version>
+  <version>0.4.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>${project.groupId}:${project.artifactId}</name>
@@ -24,9 +24,9 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>com.hubspot</groupId>
-        <artifactId>async-http-client-shaded</artifactId>
-        <version>2.12.1.0</version>
+        <groupId>org.asynchttpclient</groupId>
+        <artifactId>async-http-client</artifactId>
+        <version>3.0.2</version>
       </dependency>
       <dependency>
         <groupId>com.hubspot</groupId>
