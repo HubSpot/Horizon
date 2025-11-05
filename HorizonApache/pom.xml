@@ -42,8 +42,7 @@
     </dependency>
     <dependency>
       <groupId>com.kohlschutter.junixsocket</groupId>
-      <artifactId>junixsocket-core</artifactId>
-      <type>pom</type>
+      <artifactId>junixsocket-common</artifactId>
     </dependency>
     <dependency>
       <groupId>com.hubspot</groupId>
