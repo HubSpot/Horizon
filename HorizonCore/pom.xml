@@ -59,23 +59,9 @@
         <artifactId>maven-jar-plugin</artifactId>
         <executions>
           <execution>
-            <id>basepom.default</id>
             <goals>
               <goal>test-jar</goal>
             </goals>
-            <configuration>
-              <skip>false</skip>
-              <skipIfEmpty>false</skipIfEmpty>
-            </configuration>
-          </execution>
-          <execution>
-            <goals>
-              <goal>test-jar</goal>
-            </goals>
-            <configuration>
-              <skip>false</skip>
-              <skipIfEmpty>false</skipIfEmpty>
-            </configuration>
           </execution>
         </executions>
       </plugin>
