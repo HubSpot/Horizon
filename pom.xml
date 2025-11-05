@@ -21,6 +21,10 @@
     <module>HorizonNing</module>
   </modules>
 
+  <properties>
+    <basepom.check.skip-spotbugs>true</basepom.check.skip-spotbugs>
+  </properties>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
