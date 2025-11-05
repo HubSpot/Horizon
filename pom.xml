@@ -29,6 +29,12 @@
         <version>3.0.2</version>
       </dependency>
       <dependency>
+        <groupId>com.kohlschutter.junixsocket</groupId>
+        <artifactId>junixsocket-core</artifactId>
+        <version>2.10.1</version>
+        <type>pom</type>
+      </dependency>
+      <dependency>
         <groupId>com.hubspot</groupId>
         <artifactId>HorizonApache</artifactId>
         <version>${project.version}</version>

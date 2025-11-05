@@ -21,6 +21,7 @@ import com.hubspot.horizon.apache.internal.LenientRedirectStrategy;
 import com.hubspot.horizon.apache.internal.ProxiedPlainConnectionSocketFactory;
 import com.hubspot.horizon.apache.internal.ProxiedSSLSocketFactory;
 import com.hubspot.horizon.apache.internal.SnappyContentEncodingResponseInterceptor;
+import com.hubspot.horizon.apache.internal.UnixSocketConnectionSocketFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -112,7 +113,12 @@ public class ApacheHttpClient implements HttpClient {
   ) {
     RegistryBuilder<ConnectionSocketFactory> builder = RegistryBuilder.create();
 
-    if (config.isSocksProxied()) {
+    if (config.isUnixSocket()) {
+      builder.register(
+        "http",
+        UnixSocketConnectionSocketFactory.forPath(config.getUnixSocketPath().get())
+      );
+    } else if (config.isSocksProxied()) {
       builder.register("http", ProxiedPlainConnectionSocketFactory.getSocketFactory());
       builder.register("https", ProxiedSSLSocketFactory.forConfig(config.getSSLConfig()));
     } else {

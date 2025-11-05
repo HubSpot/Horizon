@@ -41,6 +41,11 @@
       <artifactId>snappy-java</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.kohlschutter.junixsocket</groupId>
+      <artifactId>junixsocket-core</artifactId>
+      <type>pom</type>
+    </dependency>
+    <dependency>
       <groupId>com.hubspot</groupId>
       <artifactId>HorizonCore</artifactId>
       <type>test-jar</type>
