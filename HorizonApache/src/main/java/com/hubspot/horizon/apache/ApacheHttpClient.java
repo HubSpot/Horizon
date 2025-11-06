@@ -114,6 +114,7 @@ public class ApacheHttpClient implements HttpClient {
     RegistryBuilder<ConnectionSocketFactory> builder = RegistryBuilder.create();
 
     if (config.isUnixSocket()) {
+      LOG.info("Using the unix socket factory"); // temporary logging
       builder.register(
         "http",
         UnixSocketConnectionSocketFactory.forPath(config.getUnixSocketPath().get())
