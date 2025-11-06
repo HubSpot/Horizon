@@ -47,11 +47,14 @@ public class UnixSocketConnectionSocketFactory extends PlainConnectionSocketFact
     try {
       sock.connect(AFUNIXSocketAddress.of(socketFile), connectTimeout);
     } catch (final IOException ex) {
+      LOG.error("Failed to connect to Unix socket", ex);
       try {
         sock.close();
       } catch (final IOException ignore) {}
       throw ex;
     }
+    LOG.info("Socket connected: {}", sock);
+    LOG.info("Socket channel: {}", sock.getChannel());
     return sock;
   }
 }
