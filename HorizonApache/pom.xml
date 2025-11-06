@@ -45,6 +45,10 @@
       <artifactId>junixsocket-common</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.kohlschutter.junixsocket</groupId>
+      <artifactId>junixsocket-native-common</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.hubspot</groupId>
       <artifactId>HorizonCore</artifactId>
       <type>test-jar</type>
@@ -56,4 +60,18 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <configuration>
+          <usedDependencies>
+            <dependency>com.kohlschutter.junixsocket:junixsocket-native-common</dependency>
+          </usedDependencies>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
