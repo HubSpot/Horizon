@@ -9,8 +9,14 @@ import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.protocol.HttpContext;
 import org.newsclub.net.unix.AFUNIXSocket;
 import org.newsclub.net.unix.AFUNIXSocketAddress;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UnixSocketConnectionSocketFactory extends PlainConnectionSocketFactory {
+
+  private static final Logger LOG = LoggerFactory.getLogger(
+    UnixSocketConnectionSocketFactory.class
+  );
 
   private final File socketFile;
 
@@ -37,6 +43,7 @@ public class UnixSocketConnectionSocketFactory extends PlainConnectionSocketFact
     HttpContext context
   ) throws IOException {
     final Socket sock = socket != null ? socket : createSocket(context);
+    LOG.info("Connecting to socket: {}", sock);
     try {
       sock.connect(AFUNIXSocketAddress.of(socketFile), connectTimeout);
     } catch (final IOException ex) {
