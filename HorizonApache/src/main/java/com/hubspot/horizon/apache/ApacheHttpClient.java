@@ -192,7 +192,7 @@ public class ApacheHttpClient implements HttpClient {
           );
           apacheResponse = apacheClient.execute(apacheRequest, context);
         } else if (config.isUnixSocket()) {
-          LOG.info( // todo
+          LOG.debug(
             "Request will be sent over unix socket: {}",
             config.getUnixSocketPath().get()
           );
