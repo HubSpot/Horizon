@@ -68,6 +68,7 @@
         <artifactId>maven-dependency-plugin</artifactId>
         <configuration>
           <usedDependencies>
+            <!-- Required for aarch64-Linux support; otherwise Maven declares this is an unused dependency -->
             <dependency>com.kohlschutter.junixsocket:junixsocket-native-common</dependency>
           </usedDependencies>
         </configuration>
