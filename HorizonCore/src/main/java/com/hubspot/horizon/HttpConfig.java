@@ -28,6 +28,7 @@ public class HttpConfig {
   private final Optional<String> socksProxyHost;
   private final int socksProxyPort;
   private final Optional<DnsResolver> dnsResolver;
+  private final Optional<String> unixSocketPath;
 
   private HttpConfig(
     int maxConnections,
@@ -48,7 +49,8 @@ public class HttpConfig {
     SSLConfig sslConfig,
     Optional<String> socksProxyHost,
     int socksProxyPort,
-    Optional<DnsResolver> dnsResolver
+    Optional<DnsResolver> dnsResolver,
+    Optional<String> unixSocketPath
   ) {
     this.maxConnections = maxConnections;
     this.maxConnectionsPerHost = maxConnectionsPerHost;
@@ -69,6 +71,7 @@ public class HttpConfig {
     this.socksProxyHost = socksProxyHost;
     this.socksProxyPort = socksProxyPort;
     this.dnsResolver = dnsResolver;
+    this.unixSocketPath = unixSocketPath;
   }
 
   public static Builder newBuilder() {
@@ -139,6 +142,14 @@ public class HttpConfig {
     return dnsResolver;
   }
 
+  public Optional<String> getUnixSocketPath() {
+    return unixSocketPath;
+  }
+
+  public boolean isUnixSocket() {
+    return getUnixSocketPath().isPresent();
+  }
+
   public Options getOptions() {
     Options options = new Options();
 
@@ -171,6 +182,7 @@ public class HttpConfig {
     private Optional<String> socksProxyHost = Optional.empty();
     private int socksProxyPort = 1080;
     private Optional<DnsResolver> dnsResolver = Optional.empty();
+    private Optional<String> unixSocketPath = Optional.empty();
 
     private Builder() {}
 
@@ -269,6 +281,11 @@ public class HttpConfig {
       return this;
     }
 
+    public Builder setUnixSocketPath(String unixSocketPath) {
+      this.unixSocketPath = Optional.of(unixSocketPath);
+      return this;
+    }
+
     public HttpConfig build() {
       return new HttpConfig(
         maxConnections,
@@ -289,7 +306,8 @@ public class HttpConfig {
         sslConfig,
         socksProxyHost,
         socksProxyPort,
-        dnsResolver
+        dnsResolver,
+        unixSocketPath
       );
     }
   }
