@@ -57,6 +57,12 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
   public NingAsyncHttpClient(HttpConfig config) {
     Preconditions.checkNotNull(config);
 
+    if (config.isUnixSocket()) {
+      throw new UnsupportedOperationException(
+        "Unix domain socket connections are not supported"
+      );
+    }
+
     this.eventLoopGroup = newEventLoopGroup();
     this.dnsResolver = config.getDnsResolver();
 
