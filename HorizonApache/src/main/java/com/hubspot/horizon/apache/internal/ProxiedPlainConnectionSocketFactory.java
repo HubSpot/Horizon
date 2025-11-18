@@ -9,7 +9,8 @@ import org.apache.http.protocol.HttpContext;
 
 public class ProxiedPlainConnectionSocketFactory extends PlainConnectionSocketFactory {
 
-  public static final ProxiedPlainConnectionSocketFactory INSTANCE = new ProxiedPlainConnectionSocketFactory();
+  public static final ProxiedPlainConnectionSocketFactory INSTANCE =
+    new ProxiedPlainConnectionSocketFactory();
 
   public static ProxiedPlainConnectionSocketFactory getSocketFactory() {
     return INSTANCE;

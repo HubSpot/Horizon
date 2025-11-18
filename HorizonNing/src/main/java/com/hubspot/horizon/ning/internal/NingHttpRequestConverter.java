@@ -4,15 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
 import com.google.common.base.Splitter.MapSplitter;
 import com.google.common.net.HttpHeaders;
-import com.google.common.primitives.Ints;
+import com.hubspot.horizon.DnsResolver;
 import com.hubspot.horizon.Header;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpRequest.Options;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
+import io.netty.util.concurrent.ImmediateEventExecutor;
+import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import org.asynchttpclient.shaded.Request;
-import org.asynchttpclient.shaded.RequestBuilder;
-import org.asynchttpclient.shaded.io.netty.handler.codec.http.cookie.DefaultCookie;
+import java.util.Optional;
+import org.asynchttpclient.Request;
+import org.asynchttpclient.RequestBuilder;
 
 public final class NingHttpRequestConverter {
 
@@ -27,13 +29,18 @@ public final class NingHttpRequestConverter {
     this.mapper = mapper;
   }
 
-  public Request convert(HttpRequest request) {
-    return convert(request, Options.DEFAULT);
-  }
-
-  public Request convert(HttpRequest request, Options options) {
+  public Request convert(
+    HttpRequest request,
+    Options options,
+    Optional<DnsResolver> dnsResolver
+  ) {
     RequestBuilder ningRequest = new RequestBuilder(request.getMethod().name());
     ningRequest.setUrl(request.getUrl().toString());
+    if (dnsResolver.isPresent()) {
+      ningRequest.setNameResolver(
+        new CustomNingNameResolver(ImmediateEventExecutor.INSTANCE, dnsResolver.get())
+      );
+    }
 
     byte[] body = request.getBody(mapper);
     if (body != null) {
@@ -63,12 +70,10 @@ public final class NingHttpRequestConverter {
     options
       .getRequestTimeoutSeconds()
       .ifPresent(requestTimeoutSeconds -> {
-        int requestTimeoutMillis = Ints.checkedCast(
-          TimeUnit.SECONDS.toMillis(requestTimeoutSeconds)
-        );
+        Duration requestTimeout = Duration.ofSeconds(requestTimeoutSeconds);
 
-        ningRequest.setRequestTimeout(requestTimeoutMillis);
-        ningRequest.setReadTimeout(requestTimeoutMillis);
+        ningRequest.setRequestTimeout(requestTimeout);
+        ningRequest.setReadTimeout(requestTimeout);
       });
 
     return ningRequest.build();

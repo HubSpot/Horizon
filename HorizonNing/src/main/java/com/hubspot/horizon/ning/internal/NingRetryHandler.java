@@ -22,10 +22,8 @@ public class NingRetryHandler implements RetryStrategy {
     .setNameFormat("NingAsyncHttpClient-Retry-%d")
     .build();
 
-  private static final ScheduledExecutorService RETRY_EXECUTOR = Executors.newScheduledThreadPool(
-    5,
-    THREAD_FACTORY
-  );
+  private static final ScheduledExecutorService RETRY_EXECUTOR =
+    Executors.newScheduledThreadPool(5, THREAD_FACTORY);
 
   private final AtomicReference<Runnable> retryRunnable;
   private final Options options;

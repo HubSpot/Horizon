@@ -1,7 +1,9 @@
 package com.hubspot.horizon.apache;
 
 import static com.hubspot.horizon.Assertions.assertThat;
+import static com.hubspot.horizon.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
@@ -17,6 +19,8 @@ import com.hubspot.horizon.HttpRuntimeException;
 import com.hubspot.horizon.SSLConfig;
 import com.hubspot.horizon.TestServer;
 import java.io.IOException;
+import java.io.IOException;
+import java.net.SocketException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.time.Duration;

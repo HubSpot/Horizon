@@ -5,6 +5,7 @@ import com.hubspot.horizon.Header;
 import com.hubspot.horizon.Headers;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.internal.AbstractHttpResponse;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ public class ApacheHttpResponse extends AbstractHttpResponse {
   private final InputStream responseStream;
   private final ObjectMapper mapper;
 
+  @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
   public ApacheHttpResponse(
     HttpRequest request,
     HttpResponse apacheResponse,

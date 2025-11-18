@@ -5,9 +5,10 @@ import com.google.common.net.HttpHeaders;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.internal.AbstractHttpResponse;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
-import org.asynchttpclient.shaded.AsyncCompletionHandler;
-import org.asynchttpclient.shaded.Response;
+import org.asynchttpclient.AsyncCompletionHandler;
+import org.asynchttpclient.Response;
 
 public class NingCompletionHandler extends AsyncCompletionHandler<HttpResponse> {
 
@@ -29,10 +30,13 @@ public class NingCompletionHandler extends AsyncCompletionHandler<HttpResponse> 
   }
 
   @Override
+  @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
   public HttpResponse onCompleted(Response ningResponse) throws Exception {
     AbstractHttpResponse response = new NingHttpResponse(request, ningResponse, mapper);
     if ("snappy".equals(ningResponse.getHeader(HttpHeaders.CONTENT_ENCODING))) {
       response = new SnappyHttpResponseWrapper(response);
+    } else if ("gzip".equals(ningResponse.getHeader(HttpHeaders.CONTENT_ENCODING))) {
+      response = new GzipHttpResponseWrapper(response);
     }
     if (retryHandler.shouldRetry(request, response)) {
       retryHandler.retry();

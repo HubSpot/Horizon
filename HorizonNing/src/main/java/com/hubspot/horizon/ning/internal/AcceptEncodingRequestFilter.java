@@ -1,8 +1,8 @@
 package com.hubspot.horizon.ning.internal;
 
 import com.google.common.net.HttpHeaders;
-import org.asynchttpclient.shaded.filter.FilterContext;
-import org.asynchttpclient.shaded.filter.RequestFilter;
+import org.asynchttpclient.filter.FilterContext;
+import org.asynchttpclient.filter.RequestFilter;
 
 public class AcceptEncodingRequestFilter implements RequestFilter {
 

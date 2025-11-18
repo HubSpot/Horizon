@@ -7,6 +7,7 @@ import com.hubspot.horizon.Headers;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.internal.AbstractHttpResponse;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +17,7 @@ public class CachedHttpResponse extends AbstractHttpResponse {
   private final AbstractHttpResponse delegate;
   private final byte[] responseBytes;
 
+  @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
   private CachedHttpResponse(AbstractHttpResponse delegate) throws IOException {
     this.delegate = Preconditions.checkNotNull(delegate);
     try {

@@ -5,13 +5,13 @@ import com.hubspot.horizon.Header;
 import com.hubspot.horizon.Headers;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.internal.AbstractHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-import org.asynchttpclient.shaded.Response;
-import org.asynchttpclient.shaded.io.netty.handler.codec.http.HttpHeaders;
+import org.asynchttpclient.Response;
 
 public class NingHttpResponse extends AbstractHttpResponse {
 

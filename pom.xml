@@ -5,12 +5,14 @@
   <parent>
     <groupId>com.hubspot</groupId>
     <artifactId>basepom</artifactId>
-    <version>25.8</version>
+    <version>65.1</version>
   </parent>
 
   <artifactId>Horizon</artifactId>
-  <version>0.2.1-SNAPSHOT</version>
+  <version>0.5.1-SNAPSHOT</version>
   <packaging>pom</packaging>
+
+  <name>${project.groupId}:${project.artifactId}</name>
   <description>Simple interfaces for making HTTP requests</description>
 
   <modules>
@@ -20,16 +22,30 @@
   </modules>
 
   <properties>
-    <project.build.targetJdk>11</project.build.targetJdk>
-    <project.build.sourceJdk>11</project.build.sourceJdk>
-    <project.build.releaseJdk>11</project.build.releaseJdk>
-    <basepom.check.skip-findbugs>true</basepom.check.skip-findbugs>
+    <basepom.check.skip-dependency-versions-check>true</basepom.check.skip-dependency-versions-check>
 
-    <dep.slf4j.version>1.7.30</dep.slf4j.version>
+    <dep.netty.version>4.2.7.Final</dep.netty.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.asynchttpclient</groupId>
+        <artifactId>async-http-client</artifactId>
+        <version>3.0.4</version>
+      </dependency>
+      <dependency>
+        <groupId>com.kohlschutter.junixsocket</groupId>
+        <artifactId>junixsocket-core</artifactId>
+        <version>2.10.1</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.hubspot</groupId>
+        <artifactId>HorizonApache</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       <dependency>
         <groupId>com.hubspot</groupId>
         <artifactId>HorizonCore</artifactId>
@@ -43,23 +59,8 @@
       </dependency>
       <dependency>
         <groupId>com.hubspot</groupId>
-        <artifactId>HorizonApache</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.hubspot</groupId>
         <artifactId>HorizonNing</artifactId>
         <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.hubspot</groupId>
-        <artifactId>async-http-client-shaded</artifactId>
-        <version>2.12.3.1</version>
-      </dependency>
-      <dependency>
-        <groupId>org.xerial.snappy</groupId>
-        <artifactId>snappy-java</artifactId>
-        <version>1.1.8.4</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -68,6 +69,16 @@
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -85,17 +96,23 @@
       <artifactId>jetty-util</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
+
+  <url>https://github.com/HubSpot/Horizon</url>
+
+  <licenses>
+    <license>
+      <name>The Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Jared Stehler</name>
+      <email>jstehler@hubspot.com</email>
+    </developer>
+  </developers>
 
   <scm>
     <connection>scm:git:git@github.com:HubSpot/Horizon.git</connection>

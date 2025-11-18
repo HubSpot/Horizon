@@ -27,6 +27,8 @@ public class HttpConfig {
   private final SSLConfig sslConfig;
   private final Optional<String> socksProxyHost;
   private final int socksProxyPort;
+  private final Optional<DnsResolver> dnsResolver;
+  private final Optional<String> unixSocketPath;
 
   private HttpConfig(
     int maxConnections,
@@ -46,7 +48,9 @@ public class HttpConfig {
     ObjectMapper mapper,
     SSLConfig sslConfig,
     Optional<String> socksProxyHost,
-    int socksProxyPort
+    int socksProxyPort,
+    Optional<DnsResolver> dnsResolver,
+    Optional<String> unixSocketPath
   ) {
     this.maxConnections = maxConnections;
     this.maxConnectionsPerHost = maxConnectionsPerHost;
@@ -66,16 +70,45 @@ public class HttpConfig {
     this.sslConfig = sslConfig;
     this.socksProxyHost = socksProxyHost;
     this.socksProxyPort = socksProxyPort;
+    this.dnsResolver = dnsResolver;
+    this.unixSocketPath = unixSocketPath;
   }
 
   public static Builder newBuilder() {
     return new Builder();
   }
 
+  /**
+   * The HttpClient will use this setting to throttle requests.
+   *
+   * If the client gets a request, but the max connections are already in use,
+   * the client will block indefinitely until it has a free connection for the request,
+   * then make the request once it's able.
+   *
+   * The default value is 100.
+   */
   public int getMaxConnections() {
     return maxConnections;
   }
 
+  /**
+   * Unlike {@link #getMaxConnections()}, the HttpClient will use this per-host setting to IMMEDIATELY FAIL any requests
+   * that would cause it to exceed the connections per host limit.
+   * The client does NOT block / wait for any amount of time if it gets a request when the max connections per host are already used up;
+   * instead, a {@link org.asynchttpclient.shaded.exception.TooManyConnectionsPerHostException} is thrown from the client immediately.
+   *
+   * Note, {@link #getConnectTimeoutMillis()} doesn't come into play in this connection limiting.
+   * Instead, the internal `acquireTimeout` is the timeout for acquiring a connection permit;
+   * this setting isn't exposed and the default is 0.
+   *
+   * If you want to use the client to throttle requests indefinitely without throwing exceptions for connection limits,
+   * use {@link Builder#setMaxConnectionsPerHost(int)} to a higher number than {@link #getMaxConnections()} works
+   * most of the time (except there's some race condition that can be hit when the client is being totally overwhelmed).
+   * If possible, it can be better to limit requests to the client.
+   * For example, it might be possible to limit a thread pool that uses the client accordingly.
+   *
+   * The default value is 25.
+   */
   public int getMaxConnectionsPerHost() {
     return maxConnectionsPerHost;
   }
@@ -132,6 +165,18 @@ public class HttpConfig {
     return socksProxyPort;
   }
 
+  public Optional<DnsResolver> getDnsResolver() {
+    return dnsResolver;
+  }
+
+  public Optional<String> getUnixSocketPath() {
+    return unixSocketPath;
+  }
+
+  public boolean isUnixSocket() {
+    return getUnixSocketPath().isPresent();
+  }
+
   public Options getOptions() {
     Options options = new Options();
 
@@ -164,6 +209,8 @@ public class HttpConfig {
     private SSLConfig sslConfig = SSLConfig.standard();
     private Optional<String> socksProxyHost = Optional.empty();
     private int socksProxyPort = 1080;
+    private Optional<DnsResolver> dnsResolver = Optional.empty();
+    private Optional<String> unixSocketPath = Optional.empty();
 
     private Builder() {}
 
@@ -257,6 +304,16 @@ public class HttpConfig {
       return this;
     }
 
+    public Builder setDnsResolver(DnsResolver dnsResolver) {
+      this.dnsResolver = Optional.of(dnsResolver);
+      return this;
+    }
+
+    public Builder setUnixSocketPath(String unixSocketPath) {
+      this.unixSocketPath = Optional.of(unixSocketPath);
+      return this;
+    }
+
     public HttpConfig build() {
       return new HttpConfig(
         maxConnections,
@@ -276,7 +333,9 @@ public class HttpConfig {
         mapper,
         sslConfig,
         socksProxyHost,
-        socksProxyPort
+        socksProxyPort,
+        dnsResolver,
+        unixSocketPath
       );
     }
   }

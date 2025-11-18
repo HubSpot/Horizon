@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.hubspot.horizon.AsyncHttpClient;
+import com.hubspot.horizon.DnsResolver;
 import com.hubspot.horizon.HttpConfig;
 import com.hubspot.horizon.HttpRequest;
 import com.hubspot.horizon.HttpRequest.Options;
@@ -16,20 +17,22 @@ import com.hubspot.horizon.ning.internal.NingFuture;
 import com.hubspot.horizon.ning.internal.NingHttpRequestConverter;
 import com.hubspot.horizon.ning.internal.NingRetryHandler;
 import com.hubspot.horizon.ning.internal.NingSSLContext;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.util.HashedWheelTimer;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import java.io.IOException;
+import java.time.Duration;
+import java.util.Optional;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import org.asynchttpclient.shaded.AsyncHttpClientConfig;
-import org.asynchttpclient.shaded.DefaultAsyncHttpClient;
-import org.asynchttpclient.shaded.DefaultAsyncHttpClientConfig;
-import org.asynchttpclient.shaded.Request;
-import org.asynchttpclient.shaded.filter.ThrottleRequestFilter;
-import org.asynchttpclient.shaded.io.netty.channel.EventLoopGroup;
-import org.asynchttpclient.shaded.io.netty.channel.nio.NioEventLoopGroup;
-import org.asynchttpclient.shaded.io.netty.util.HashedWheelTimer;
-import org.asynchttpclient.shaded.io.netty.util.concurrent.DefaultThreadFactory;
-import org.asynchttpclient.shaded.proxy.ProxyServer;
-import org.asynchttpclient.shaded.proxy.ProxyType;
+import org.asynchttpclient.AsyncHttpClientConfig;
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
+import org.asynchttpclient.Request;
+import org.asynchttpclient.filter.ThrottleRequestFilter;
+import org.asynchttpclient.proxy.ProxyServer;
+import org.asynchttpclient.proxy.ProxyType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,11 +43,12 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
   );
   private static final Logger LOG = LoggerFactory.getLogger(NingAsyncHttpClient.class);
 
-  private final org.asynchttpclient.shaded.AsyncHttpClient ningClient;
+  private final org.asynchttpclient.AsyncHttpClient ningClient;
   private final NingHttpRequestConverter requestConverter;
   private final Options defaultOptions;
   private final ObjectMapper mapper;
   private final EventLoopGroup eventLoopGroup;
+  private final Optional<DnsResolver> dnsResolver;
 
   public NingAsyncHttpClient() {
     this(HttpConfig.newBuilder().build());
@@ -52,10 +56,16 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
 
   public NingAsyncHttpClient(HttpConfig config) {
     Preconditions.checkNotNull(config);
+    Preconditions.checkArgument(
+      !config.isUnixSocket(),
+      "Unix domain socket connections are not supported"
+    );
 
     this.eventLoopGroup = newEventLoopGroup();
+    this.dnsResolver = config.getDnsResolver();
 
-    DefaultAsyncHttpClientConfig.Builder builder = new DefaultAsyncHttpClientConfig.Builder();
+    DefaultAsyncHttpClientConfig.Builder builder =
+      new DefaultAsyncHttpClientConfig.Builder();
 
     if (config.isSocksProxied()) {
       LOG.debug(
@@ -77,10 +87,10 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
       .addRequestFilter(new AcceptEncodingRequestFilter())
       .addRequestFilter(new DefaultHeadersRequestFilter(config))
       .setMaxConnectionsPerHost(config.getMaxConnectionsPerHost())
-      .setConnectionTtl(config.getConnectionTtlMillis())
-      .setConnectTimeout(config.getConnectTimeoutMillis())
-      .setRequestTimeout(config.getRequestTimeoutMillis())
-      .setReadTimeout(config.getRequestTimeoutMillis())
+      .setConnectionTtl(Duration.ofMillis(config.getConnectionTtlMillis()))
+      .setConnectTimeout(Duration.ofMillis(config.getConnectTimeoutMillis()))
+      .setRequestTimeout(Duration.ofMillis(config.getRequestTimeoutMillis()))
+      .setReadTimeout(Duration.ofMillis(config.getRequestTimeoutMillis()))
       .setMaxRedirects(config.getMaxRedirects())
       .setFollowRedirect(config.isFollowRedirects())
       .setSslContext(NingSSLContext.forConfig(config.getSSLConfig()))
@@ -88,6 +98,8 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
       .setEventLoopGroup(eventLoopGroup)
       .setNettyTimer(TIMER)
       .setMaxRequestRetry(0) // we handle retries ourselves
+      // auto decompression uses snappy framed compression https://github.com/xerial/snappy-java?tab=readme-ov-file#data-format-compatibility-matrix
+      .setEnableAutomaticDecompression(false)
       .build();
 
     this.ningClient = new DefaultAsyncHttpClient(ningConfig);
@@ -136,7 +148,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
       retryHandler,
       mapper
     );
-    final Request ningRequest = requestConverter.convert(request, options);
+    final Request ningRequest = requestConverter.convert(request, options, dnsResolver);
     Runnable runnable = () -> {
       try {
         ningClient.executeRequest(ningRequest, completionHandler);

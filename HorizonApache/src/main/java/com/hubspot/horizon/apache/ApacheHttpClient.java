@@ -14,12 +14,15 @@ import com.hubspot.horizon.apache.internal.ApacheHttpRequestConverter;
 import com.hubspot.horizon.apache.internal.ApacheHttpResponse;
 import com.hubspot.horizon.apache.internal.ApacheSSLSocketFactory;
 import com.hubspot.horizon.apache.internal.CachedHttpResponse;
+import com.hubspot.horizon.apache.internal.CustomApacheDnsResolver;
 import com.hubspot.horizon.apache.internal.DefaultHeadersRequestInterceptor;
 import com.hubspot.horizon.apache.internal.KeepAliveWithDefaultStrategy;
 import com.hubspot.horizon.apache.internal.LenientRedirectStrategy;
 import com.hubspot.horizon.apache.internal.ProxiedPlainConnectionSocketFactory;
 import com.hubspot.horizon.apache.internal.ProxiedSSLSocketFactory;
 import com.hubspot.horizon.apache.internal.SnappyContentEncodingResponseInterceptor;
+import com.hubspot.horizon.apache.internal.UnixSocketConnectionSocketFactory;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -37,6 +40,7 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.config.SocketConfig;
+import org.apache.http.conn.DnsResolver;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
@@ -95,9 +99,12 @@ public class ApacheHttpClient implements HttpClient {
 
   private HttpClientConnectionManager createConnectionManager(HttpConfig config) {
     Registry<ConnectionSocketFactory> registry = createSocketFactoryRegistry(config);
-    PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(
-      registry
-    );
+    DnsResolver dnsResolver = null;
+    if (config.getDnsResolver().isPresent()) {
+      dnsResolver = new CustomApacheDnsResolver(config.getDnsResolver().get());
+    }
+    PoolingHttpClientConnectionManager connectionManager =
+      new PoolingHttpClientConnectionManager(registry, null, dnsResolver);
     connectionManager.setMaxTotal(config.getMaxConnections());
     connectionManager.setDefaultMaxPerRoute(config.getMaxConnectionsPerHost());
 
@@ -109,7 +116,9 @@ public class ApacheHttpClient implements HttpClient {
   ) {
     RegistryBuilder<ConnectionSocketFactory> builder = RegistryBuilder.create();
 
-    if (config.isSocksProxied()) {
+    if (config.isUnixSocket()) {
+      builder.register("http", UnixSocketConnectionSocketFactory.getSocketFactory());
+    } else if (config.isSocksProxied()) {
       builder.register("http", ProxiedPlainConnectionSocketFactory.getSocketFactory());
       builder.register("https", ProxiedSSLSocketFactory.forConfig(config.getSSLConfig()));
     } else {
@@ -182,6 +191,17 @@ public class ApacheHttpClient implements HttpClient {
             "Request will be routed via SOCKS proxy {}:{}",
             request.getUrl(),
             config.getSocksProxyHost()
+          );
+          apacheResponse = apacheClient.execute(apacheRequest, context);
+        } else if (config.isUnixSocket()) {
+          LOG.debug(
+            "Request will be sent over unix socket: {}",
+            config.getUnixSocketPath().get()
+          );
+          HttpClientContext context = HttpClientContext.create();
+          context.setAttribute(
+            "unix.socket.file",
+            new File(config.getUnixSocketPath().get())
           );
           apacheResponse = apacheClient.execute(apacheRequest, context);
         } else {
