@@ -4,11 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.UnixDomainSocketAddress;
 import org.apache.http.HttpHost;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.protocol.HttpContext;
-import org.newsclub.net.unix.AFUNIXSocket;
-import org.newsclub.net.unix.AFUNIXSocketAddress;
 
 public class UnixSocketConnectionSocketFactory extends PlainConnectionSocketFactory {
 
@@ -21,7 +20,7 @@ public class UnixSocketConnectionSocketFactory extends PlainConnectionSocketFact
 
   @Override
   public Socket createSocket(final HttpContext context) throws IOException {
-    return AFUNIXSocket.newInstance();
+    return new Socket();
   }
 
   @Override
@@ -36,7 +35,7 @@ public class UnixSocketConnectionSocketFactory extends PlainConnectionSocketFact
     final Socket sock = socket != null ? socket : createSocket(context);
     try {
       File socketFile = (File) context.getAttribute("unix.socket.file");
-      sock.connect(AFUNIXSocketAddress.of(socketFile), connectTimeout);
+      sock.connect(UnixDomainSocketAddress.of(socketFile.toPath()), connectTimeout);
     } catch (final IOException ex) {
       try {
         sock.close();

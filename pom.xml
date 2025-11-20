@@ -24,6 +24,8 @@
   <properties>
     <basepom.check.skip-dependency-versions-check>true</basepom.check.skip-dependency-versions-check>
 
+    <maven.compiler.release>21</maven.compiler.release>
+
     <dep.netty.version>4.2.7.Final</dep.netty.version>
   </properties>
 
@@ -33,13 +35,6 @@
         <groupId>org.asynchttpclient</groupId>
         <artifactId>async-http-client</artifactId>
         <version>3.0.4</version>
-      </dependency>
-      <dependency>
-        <groupId>com.kohlschutter.junixsocket</groupId>
-        <artifactId>junixsocket-core</artifactId>
-        <version>2.10.1</version>
-        <type>pom</type>
-        <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>com.hubspot</groupId>
