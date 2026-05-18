@@ -24,7 +24,7 @@
   <properties>
     <basepom.check.skip-dependency-versions-check>true</basepom.check.skip-dependency-versions-check>
 
-    <dep.netty.version>4.2.7.Final</dep.netty.version>
+    <dep.netty.version>4.2.9.Final</dep.netty.version>
   </properties>
 
   <dependencyManagement>
@@ -32,7 +32,7 @@
       <dependency>
         <groupId>org.asynchttpclient</groupId>
         <artifactId>async-http-client</artifactId>
-        <version>3.0.4</version>
+        <version>3.0.9</version>
       </dependency>
       <dependency>
         <groupId>com.kohlschutter.junixsocket</groupId>
