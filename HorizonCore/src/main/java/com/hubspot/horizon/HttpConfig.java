@@ -95,7 +95,7 @@ public class HttpConfig {
    * Unlike {@link #getMaxConnections()}, the HttpClient will use this per-host setting to IMMEDIATELY FAIL any requests
    * that would cause it to exceed the connections per host limit.
    * The client does NOT block / wait for any amount of time if it gets a request when the max connections per host are already used up;
-   * instead, a {@link org.asynchttpclient.shaded.exception.TooManyConnectionsPerHostException} is thrown from the client immediately.
+   * instead, a {@link org.asynchttpclient.exception.TooManyConnectionsPerHostException} is thrown from the client immediately.
    *
    * Note, {@link #getConnectTimeoutMillis()} doesn't come into play in this connection limiting.
    * Instead, the internal `acquireTimeout` is the timeout for acquiring a connection permit;
