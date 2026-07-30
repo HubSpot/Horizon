@@ -133,7 +133,7 @@ public class HttpRequest {
 
   public static class Options {
 
-    public static Options DEFAULT = new Options();
+    public static final Options DEFAULT = new Options();
 
     private Optional<Integer> maxRetries = Optional.absent();
     private Optional<Integer> initialRetryBackoffSeconds = Optional.absent();
