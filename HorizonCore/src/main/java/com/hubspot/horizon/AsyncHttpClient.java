@@ -14,17 +14,21 @@ public interface AsyncHttpClient extends Closeable {
     SettableFuture<HttpResponse> responseFuture = SettableFuture.create();
 
     try {
-      execute(request, options, new Callback() {
-        @Override
-        public void completed(HttpResponse response) {
-          responseFuture.set(response);
-        }
+      execute(
+        request,
+        options,
+        new Callback() {
+          @Override
+          public void completed(HttpResponse response) {
+            responseFuture.set(response);
+          }
 
-        @Override
-        public void failed(Exception e) {
-          responseFuture.setException(e);
+          @Override
+          public void failed(Exception e) {
+            responseFuture.setException(e);
+          }
         }
-      });
+      );
     } catch (HttpRuntimeException e) {
       responseFuture.setException(e);
     }
