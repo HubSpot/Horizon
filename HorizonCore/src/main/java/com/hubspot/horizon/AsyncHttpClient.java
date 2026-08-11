@@ -1,5 +1,6 @@
 package com.hubspot.horizon;
 
+import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.hubspot.horizon.HttpRequest.Options;
@@ -7,7 +8,7 @@ import java.io.Closeable;
 
 public interface AsyncHttpClient extends Closeable {
   default ListenableFuture<HttpResponse> execute(HttpRequest request) {
-    return execute(request, Options.DEFAULT);
+    return execute(Preconditions.checkNotNull(request), Options.DEFAULT);
   }
 
   default ListenableFuture<HttpResponse> execute(HttpRequest request, Options options) {
@@ -15,7 +16,7 @@ public interface AsyncHttpClient extends Closeable {
 
     try {
       execute(
-        request,
+        Preconditions.checkNotNull(request),
         options,
         new Callback() {
           @Override
@@ -37,7 +38,7 @@ public interface AsyncHttpClient extends Closeable {
   }
 
   default void execute(HttpRequest request, Callback callback) {
-    execute(request, Options.DEFAULT, callback);
+    execute(Preconditions.checkNotNull(request), Options.DEFAULT, callback);
   }
 
   void execute(HttpRequest request, Options options, Callback callback);
