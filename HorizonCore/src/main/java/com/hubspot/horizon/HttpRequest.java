@@ -77,6 +77,7 @@ public class HttpRequest {
   private final byte[] body;
   private final Object jsonBody;
   private final Options options;
+  private final Builder builder;
 
   private HttpRequest(
     Method method,
@@ -85,7 +86,8 @@ public class HttpRequest {
     Compression compression,
     @Nullable byte[] body,
     @Nullable Object jsonBody,
-    Options options
+    Options options,
+    Builder builder
   ) {
     this.method = Preconditions.checkNotNull(method);
     this.url = Preconditions.checkNotNull(url);
@@ -94,6 +96,7 @@ public class HttpRequest {
     this.body = body;
     this.jsonBody = jsonBody;
     this.options = Preconditions.checkNotNull(options);
+    this.builder = Preconditions.checkNotNull(builder);
   }
 
   public static Builder newBuilder() {
@@ -129,6 +132,10 @@ public class HttpRequest {
 
   public Options getOptions() {
     return options;
+  }
+
+  public Builder toBuilder() {
+    return builder;
   }
 
   public static class Options {
@@ -296,9 +303,18 @@ public class HttpRequest {
     public HttpRequest build() {
       URI url = buildUrl();
       Headers headers = buildHeaders();
-      validateBodyState();
+      byte[] body = validateBodyState();
 
-      return new HttpRequest(method, url, headers, compression, body, jsonBody, options);
+      return new HttpRequest(
+        method,
+        url,
+        headers,
+        compression,
+        body,
+        jsonBody,
+        options,
+        this
+      );
     }
 
     private URI buildUrl() {
@@ -312,9 +328,9 @@ public class HttpRequest {
       }
     }
 
-    private void validateBodyState() {
+    private @Nullable byte[] validateBodyState() {
       if (body == null && jsonBody == null && formParams.isEmpty()) {
-        return;
+        return null;
       }
 
       Preconditions.checkState(
@@ -327,32 +343,40 @@ public class HttpRequest {
           jsonBody == null && formParams.isEmpty(),
           "Cannot set more than one body"
         );
+
+        return body;
       } else if (jsonBody != null) {
         Preconditions.checkState(formParams.isEmpty(), "Cannot set more than one body");
+
+        return null;
       } else {
-        body = urlEncode(formParams).getBytes(UTF_8);
+        return urlEncode(formParams).getBytes(UTF_8);
       }
     }
 
     private Headers buildHeaders() {
+      List<Header> headersCopy = new ArrayList<>(headers);
+
       Optional<String> contentEncodingHeaderValue =
         compression.getContentEncodingHeaderValue();
       if (
         contentEncodingHeaderValue.isPresent() &&
         !headerPresent(HttpHeaders.CONTENT_ENCODING)
       ) {
-        headers.add(
+        headersCopy.add(
           new Header(HttpHeaders.CONTENT_ENCODING, contentEncodingHeaderValue.get())
         );
       }
       if (contentType != null && !headerPresent(HttpHeaders.CONTENT_TYPE)) {
-        headers.add(new Header(HttpHeaders.CONTENT_TYPE, contentType.getHeaderValue()));
+        headersCopy.add(
+          new Header(HttpHeaders.CONTENT_TYPE, contentType.getHeaderValue())
+        );
       }
       if (accept != null && !headerPresent(HttpHeaders.ACCEPT)) {
-        headers.add(new Header(HttpHeaders.ACCEPT, accept.getHeaderValue()));
+        headersCopy.add(new Header(HttpHeaders.ACCEPT, accept.getHeaderValue()));
       }
 
-      return new Headers(headers);
+      return new Headers(headersCopy);
     }
 
     private boolean headerPresent(String headerName) {
