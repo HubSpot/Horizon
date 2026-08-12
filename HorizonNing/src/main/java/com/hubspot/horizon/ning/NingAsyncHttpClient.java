@@ -109,18 +109,8 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
   }
 
   @Override
-  public ListenableFuture<HttpResponse> execute(HttpRequest request) {
-    return execute(Preconditions.checkNotNull(request), Options.DEFAULT);
-  }
-
-  @Override
   public ListenableFuture<HttpResponse> execute(HttpRequest request, Options options) {
     return internalExecute(request, options, EmptyCallback.INSTANCE);
-  }
-
-  @Override
-  public void execute(HttpRequest request, Callback callback) {
-    execute(Preconditions.checkNotNull(request), Options.DEFAULT, callback);
   }
 
   @Override

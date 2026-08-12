@@ -144,11 +144,6 @@ public class ApacheHttpClient implements HttpClient {
   }
 
   @Override
-  public HttpResponse execute(HttpRequest request) throws HttpRuntimeException {
-    return execute(Preconditions.checkNotNull(request), Options.DEFAULT);
-  }
-
-  @Override
   public HttpResponse execute(HttpRequest request, Options options)
     throws HttpRuntimeException {
     Preconditions.checkNotNull(request);
