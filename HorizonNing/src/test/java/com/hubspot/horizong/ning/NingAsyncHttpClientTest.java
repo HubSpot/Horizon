@@ -17,8 +17,14 @@ import com.hubspot.horizon.ning.NingAsyncHttpClient;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -253,6 +259,40 @@ public class NingAsyncHttpClientTest {
     HttpResponse response = httpClient.execute(request).get();
 
     assertThat(response).hasStatusCode(200).hasBody("test").hasRetries(0);
+  }
+
+  @Test
+  public void itFailsInFlightRequestsWhenClosed() throws Exception {
+    httpClient = new NingAsyncHttpClient();
+
+    List<Socket> acceptedSockets = new ArrayList<>();
+    try (ServerSocket silentServer = new ServerSocket(0)) {
+      Thread acceptor = new Thread(() -> {
+        try {
+          while (true) {
+            acceptedSockets.add(silentServer.accept());
+          }
+        } catch (IOException ignored) {
+          // server socket closed at the end of the test
+        }
+      });
+      acceptor.setDaemon(true);
+      acceptor.start();
+
+      HttpRequest request = HttpRequest
+        .newBuilder()
+        .setMethod(Method.GET)
+        .setUrl("http://localhost:" + silentServer.getLocalPort())
+        .build();
+      Future<HttpResponse> future = httpClient.execute(request);
+
+      httpClient.close();
+
+      assertThatThrownBy(() -> future.get(5, TimeUnit.SECONDS))
+        .isExactlyInstanceOf(ExecutionException.class)
+        .hasCauseInstanceOf(IOException.class)
+        .hasMessageContaining("closed before the request completed");
+    }
   }
 
   @Test

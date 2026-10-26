@@ -3,6 +3,7 @@ package com.hubspot.horizon.ning;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.hubspot.horizon.AsyncHttpClient;
 import com.hubspot.horizon.DnsResolver;
 import com.hubspot.horizon.HttpConfig;
@@ -24,6 +25,8 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import org.asynchttpclient.AsyncHttpClientConfig;
@@ -49,6 +52,9 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
   private final ObjectMapper mapper;
   private final EventLoopGroup eventLoopGroup;
   private final Optional<DnsResolver> dnsResolver;
+  // async-http-client never completes requests that are in flight when it is closed
+  // (https://github.com/AsyncHttpClient/async-http-client/issues/1638), so close() fails them itself.
+  private final Set<NingFuture> inFlightFutures = ConcurrentHashMap.newKeySet();
 
   public NingAsyncHttpClient() {
     this(HttpConfig.newBuilder().build());
@@ -131,6 +137,11 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
       defaultOptions.mergeFrom(options)
     );
     NingFuture future = new NingFuture(callback);
+    inFlightFutures.add(future);
+    future.addListener(
+      () -> inFlightFutures.remove(future),
+      MoreExecutors.directExecutor()
+    );
 
     final NingCompletionHandler completionHandler = new NingCompletionHandler(
       request,
@@ -168,7 +179,16 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
     try {
       ningClient.close();
     } finally {
+      failInFlightRequests();
       eventLoopGroup.shutdownGracefully(0, 5, TimeUnit.SECONDS);
+    }
+  }
+
+  private void failInFlightRequests() {
+    for (NingFuture future : inFlightFutures) {
+      future.setException(
+        new IOException("NingAsyncHttpClient was closed before the request completed")
+      );
     }
   }
 }
