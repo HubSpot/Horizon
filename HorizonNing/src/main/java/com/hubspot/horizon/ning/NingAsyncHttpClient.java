@@ -12,11 +12,11 @@ import com.hubspot.horizon.HttpResponse;
 import com.hubspot.horizon.ning.internal.AcceptEncodingRequestFilter;
 import com.hubspot.horizon.ning.internal.DefaultHeadersRequestFilter;
 import com.hubspot.horizon.ning.internal.EmptyCallback;
+import com.hubspot.horizon.ning.internal.LazySslEngineFactory;
 import com.hubspot.horizon.ning.internal.NingCompletionHandler;
 import com.hubspot.horizon.ning.internal.NingFuture;
 import com.hubspot.horizon.ning.internal.NingHttpRequestConverter;
 import com.hubspot.horizon.ning.internal.NingRetryHandler;
-import com.hubspot.horizon.ning.internal.NingSSLContext;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.HashedWheelTimer;
@@ -93,7 +93,7 @@ public class NingAsyncHttpClient implements AsyncHttpClient {
       .setReadTimeout(Duration.ofMillis(config.getRequestTimeoutMillis()))
       .setMaxRedirects(config.getMaxRedirects())
       .setFollowRedirect(config.isFollowRedirects())
-      .setSslContext(NingSSLContext.forConfig(config.getSSLConfig()))
+      .setSslEngineFactory(new LazySslEngineFactory(config.getSSLConfig()))
       .setUserAgent(config.getUserAgent())
       .setEventLoopGroup(eventLoopGroup)
       .setNettyTimer(TIMER)

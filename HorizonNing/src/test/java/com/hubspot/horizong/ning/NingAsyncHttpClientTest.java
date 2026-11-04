@@ -3,6 +3,7 @@ package com.hubspot.horizong.ning;
 import static com.hubspot.horizon.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import com.hubspot.horizon.AsyncHttpClient;
 import com.hubspot.horizon.Compression;
@@ -19,6 +20,8 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManagerFactory;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -268,5 +271,53 @@ public class NingAsyncHttpClientTest {
     int finalThreadCount = threadMXBean.getThreadCount();
 
     assertThat(finalThreadCount - initialThreadCount).isLessThan(10);
+  }
+
+  @Test
+  public void itDefersSslSetupErrorsToTheFirstHttpsRequest() throws Exception {
+    httpClient =
+      new NingAsyncHttpClient(
+        HttpConfig.newBuilder().setSSLConfig(brokenSslConfig()).build()
+      );
+
+    HttpResponse response = httpClient
+      .execute(
+        HttpRequest
+          .newBuilder()
+          .setMethod(Method.POST)
+          .setUrl(TEST_SERVER.baseHttpUrl())
+          .setBody(ExpectedHttpResponse.newBuilder().build())
+          .build()
+      )
+      .get();
+    assertThat(response).hasStatusCode(200);
+
+    HttpRequest httpsRequest = HttpRequest
+      .newBuilder()
+      .setMethod(Method.POST)
+      .setUrl(TEST_SERVER.baseHttpsUrl())
+      .setBody(ExpectedHttpResponse.newBuilder().build())
+      .build();
+    Throwable first = rootCause(
+      catchThrowable(() -> httpClient.execute(httpsRequest).get())
+    );
+    Throwable second = rootCause(
+      catchThrowable(() -> httpClient.execute(httpsRequest).get())
+    );
+    assertThat(first).isNotNull().isSameAs(second);
+  }
+
+  private static SSLConfig brokenSslConfig() throws Exception {
+    return SSLConfig.custom(
+      KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm()),
+      TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+    );
+  }
+
+  private static Throwable rootCause(Throwable t) {
+    while (t != null && t.getCause() != null && t.getCause() != t) {
+      t = t.getCause();
+    }
+    return t;
   }
 }
